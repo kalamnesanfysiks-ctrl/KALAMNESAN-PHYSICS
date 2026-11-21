@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KALAMNESAN PHYSICS - தேர்வு மையப் பிரிவுகள்</title>
+  
+  <!-- PWA Manifest & Mobile Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e1b4b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="kalam.png">
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -12,6 +20,24 @@
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen pb-16">
+
+  <!-- 📲 PWA Install Floating Banner -->
+  <div id="pwaInstallBanner" style="display: none;" class="bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 px-4 py-2.5 shadow-md sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-3 text-xs md:text-sm font-bold">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">📲</span>
+        <span>கலாம்நேசன் இயற்பியல் செயலியை உங்கள் போனில் நிறுவிக் கொள்ளுங்கள்!</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="pwaInstallBtn" class="bg-slate-950 hover:bg-slate-800 text-amber-300 px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow">
+          நிறுவுக (Install)
+        </button>
+        <button onclick="dismissPwaBanner()" class="text-slate-900 hover:text-black font-extrabold text-sm px-1.5">
+          ✕
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div class="max-w-5xl mx-auto px-4 py-8">
     
@@ -79,7 +105,6 @@
     <!-- 🌟 நிலை 1: முதன்மை ஃபோல்டர்கள் (Main Categories View) -->
     <div id="foldersView" style="display: none;" class="space-y-6">
       
-      <!-- விரைவு வகுப்பு வடிகட்டி பட்டன்கள் -->
       <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
           <span>🎯</span> வகுப்பைத் தேர்வு செய்க:
@@ -106,7 +131,6 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="folderCardsGrid">
         
-        <!-- Folder 1: State Board 12 -->
         <div data-grade="12" onclick="openSubFolders('BOARD', 12, 'State Board - 12-ஆம் வகுப்பு')" 
              class="folder-card bg-white p-6 rounded-2xl border-2 border-slate-200 hover:border-emerald-600 hover:shadow-lg transition cursor-pointer text-center group">
           <div class="text-4xl mb-2 group-hover:scale-110 transition transform">📖</div>
@@ -115,7 +139,6 @@
           <span id="count-BOARD-12" class="mt-3 inline-block bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
         </div>
 
-        <!-- Folder 2: State Board 11 -->
         <div data-grade="11" onclick="openSubFolders('BOARD', 11, 'State Board - 11-ஆம் வகுப்பு')" 
              class="folder-card bg-white p-6 rounded-2xl border-2 border-slate-200 hover:border-emerald-600 hover:shadow-lg transition cursor-pointer text-center group">
           <div class="text-4xl mb-2 group-hover:scale-110 transition transform">📖</div>
@@ -124,7 +147,6 @@
           <span id="count-BOARD-11" class="mt-3 inline-block bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
         </div>
 
-        <!-- Folder 3: NEET 12 -->
         <div data-grade="12" onclick="openSubFolders('NEET', 12, 'NEET Physics - 12-ஆம் வகுப்பு')" 
              class="folder-card bg-white p-6 rounded-2xl border-2 border-slate-200 hover:border-rose-600 hover:shadow-lg transition cursor-pointer text-center group">
           <div class="text-4xl mb-2 group-hover:scale-110 transition transform">🩺</div>
@@ -133,7 +155,6 @@
           <span id="count-NEET-12" class="mt-3 inline-block bg-rose-50 text-rose-700 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
         </div>
 
-        <!-- Folder 4: NEET 11 -->
         <div data-grade="11" onclick="openSubFolders('NEET', 11, 'NEET Physics - 11-ஆம் வகுப்பு')" 
              class="folder-card bg-white p-6 rounded-2xl border-2 border-slate-200 hover:border-rose-600 hover:shadow-lg transition cursor-pointer text-center group">
           <div class="text-4xl mb-2 group-hover:scale-110 transition transform">🩺</div>
@@ -142,7 +163,6 @@
           <span id="count-NEET-11" class="mt-3 inline-block bg-rose-50 text-rose-700 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
         </div>
 
-        <!-- Folder 5: JEE 12 -->
         <div data-grade="12" onclick="openSubFolders('JEE', 12, 'JEE Main/Adv - 12-ஆம் வகுப்பு')" 
              class="folder-card bg-white p-6 rounded-2xl border-2 border-slate-200 hover:border-sky-600 hover:shadow-lg transition cursor-pointer text-center group">
           <div class="text-4xl mb-2 group-hover:scale-110 transition transform">⚙️</div>
@@ -151,7 +171,6 @@
           <span id="count-JEE-12" class="mt-3 inline-block bg-sky-50 text-sky-700 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
         </div>
 
-        <!-- Folder 6: JEE 11 -->
         <div data-grade="11" onclick="openSubFolders('JEE', 11, 'JEE Main/Adv - 11-ஆம் வகுப்பு')" 
              class="folder-card bg-white p-6 rounded-2xl border-2 border-slate-200 hover:border-sky-600 hover:shadow-lg transition cursor-pointer text-center group">
           <div class="text-4xl mb-2 group-hover:scale-110 transition transform">⚙️</div>
@@ -163,7 +182,7 @@
       </div>
     </div>
 
-    <!-- 🌟 நிலை 2: சப்-ஃபோல்டர்கள் திரை (Sub-Folders Category View) -->
+    <!-- 🌟 நிலை 2: சப்-ஃபோல்டர்கள் திரை -->
     <div id="subFoldersView" style="display: none;" class="space-y-6">
       <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         <div>
@@ -175,12 +194,10 @@
         </button>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="subFolderCardsContainer">
-        <!-- Sub folders rendered dynamically here -->
-      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="subFolderCardsContainer"></div>
     </div>
 
-    <!-- 🌟 நிலை 3: குறிப்பிட்ட சப்-ஃபோல்டருக்குள் உள்ள வினாத்தாள்கள் (Exams List View) -->
+    <!-- 🌟 நிலை 3: குறிப்பிட்ட சப்-ஃபோல்டருக்குள் உள்ள வினாத்தாள்கள் -->
     <div id="folderView" style="display: none;" class="space-y-6">
       
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
@@ -190,7 +207,6 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <!-- வினாத்தாள் நேரடித் தேடல் பெட்டி -->
           <div class="relative">
             <input type="text" id="examSearchInput" oninput="filterCurrentFolderExams()" placeholder="தேர்வைத் தேடுக..." 
                    class="px-3.5 py-1.5 pr-8 border border-slate-300 rounded-xl text-xs outline-none focus:border-indigo-600 bg-slate-50 w-44 sm:w-56">
@@ -203,9 +219,7 @@
         </div>
       </div>
 
-      <div id="folderExamsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Exams listed here dynamically -->
-      </div>
+      <div id="folderExamsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </div>
 
   </div>
@@ -288,7 +302,6 @@
       }
     }
 
-    // 🎯 வினாத்தாளைப் பிரித்தெடுக்கும் மிகத் துல்லியமான லாஜிக் (பழைய + புதிய தேர்வுகள் இரண்டும் 100% பொருந்தும்)
     function getNormalizedExam(exam) {
       let med = (exam.medium || 'TAMIL').toUpperCase();
       let type = (exam.exam_type || 'BOARD').toUpperCase();
@@ -297,16 +310,13 @@
       let rawSub = (exam.sub_category || exam.chapter_name || '').toUpperCase();
       const examTitleText = (exam.exam_title || exam.title || '').toLowerCase();
 
-      // 1. தேர்வு வகை கண்டறிதல்
       if (examTitleText.includes('jee')) type = 'JEE';
       else if (examTitleText.includes('neet')) type = 'NEET';
       else if (examTitleText.includes('board') || type.includes('BOARD') || type.includes('STATE')) type = 'BOARD';
 
-      // 2. வகுப்பு கண்டறிதல்
       if (examTitleText.includes('11') || examTitleText.includes('11-ஆம்')) grade = 11;
       else if (examTitleText.includes('12') || examTitleText.includes('12-ஆம்')) grade = 12;
 
-      // 3. சப்-ஃபோல்டர் துல்லியமாகப் பொருத்துதல்
       let sub = 'BOOK_BACK';
 
       if (rawSub === 'BOOK_BACK' || examTitleText.includes('book back') || examTitleText.includes('பாடநூல்')) {
@@ -382,7 +392,6 @@
       });
     }
 
-    // 📂 நிலை 2: சப்-ஃபோல்டர்களைக் காட்டுதல்
     function openSubFolders(targetType, targetGrade, title) {
       currentMainType = targetType;
       currentGrade = targetGrade;
@@ -424,7 +433,6 @@
       });
     }
 
-    // 📄 நிலை 3: சப்-ஃபோல்டருக்குள் உள்ள வினாத்தாள்களைக் காட்டுதல்
     function openSpecificSubFolderExams(subKey, subName) {
       currentSubCategory = subKey;
 
@@ -524,6 +532,31 @@
       document.getElementById('folderView').style.display = 'none';
       document.getElementById('subFoldersView').style.display = 'none';
       document.getElementById('foldersView').style.display = 'block';
+    }
+
+    // 📲 PWA Installation Handler
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner) banner.style.display = 'block';
+    });
+
+    document.getElementById('pwaInstallBtn')?.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          dismissPwaBanner();
+        }
+        deferredPrompt = null;
+      }
+    });
+
+    function dismissPwaBanner() {
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner) banner.style.display = 'none';
     }
 
     loadExams();
