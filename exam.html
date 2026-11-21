@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KALAMNESAN PHYSICS - தேர்வு அறை & சான்றிதழ்</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- KaTeX for Physics Math Equations -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Mukta+Malar:wght@400;600;700;800&family=Pinyon+Script&display=swap');
+    body { font-family: 'Mukta Malar', 'Segoe UI', sans-serif; }
+    .font-cinzel { font-family: 'Cinzel', serif; }
+    .font-signature { font-family: 'Pinyon Script', cursive; }
+
+    .cert-border {
+      border: 12px double #b45309;
+      box-shadow: 0 0 0 6px #1e1b4b, 0 15px 35px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printableCertificate, #printableCertificate * { visibility: visible; }
+      #printableCertificate {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 30px !important;
+        background: #fffdf5 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-20 font-sans">
+
+  <!-- Header & Timer Bar -->
+  <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 sticky top-0 z-40 flex justify-between items-center shadow-lg" id="topHeader">
+    <div>
+      <h1 class="text-sm md:text-base font-bold text-amber-400" id="examHeaderTitle">தேர்வு அறை</h1>
+      <p class="text-[11px] text-slate-400" id="examHeaderSub">KALAMNESAN ONLINE TEST</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-sm font-mono font-bold flex items-center gap-2" id="timerBox">
+        <i class="fa-regular fa-clock"></i> <span id="timeLeft">00:00</span>
+      </div>
+      
+      <button type="button" onclick="openFullPaperModal()" class="bg-slate-700 hover:bg-slate-600 text-amber-300 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-slate-600 flex items-center gap-1.5 shadow">
+        <i class="fa-regular fa-file-lines"></i> <span class="hidden sm:inline">வினாத்தாள்</span>
+      </button>
+
+      <button onclick="confirmSubmitExam()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-1.5 rounded-xl text-xs transition shadow" id="btnSubmitTop">
+        முடி (Submit)
+      </button>
+    </div>
+  </header>
+
+  <!-- 5-Minute Warning Banner -->
+  <div id="timeWarningBanner" class="hidden bg-rose-600 text-white text-xs font-bold py-2 px-4 text-center sticky top-[57px] z-30 shadow-md animate-bounce">
+    ⚠️ கவனிக்கவும்: இன்னும் 5 நிமிடங்கள் மட்டுமே உள்ளன! வினாக்களை விரைந்து சரிபார்க்கவும்.
+  </div>
+
+  <!-- 1. Student Auth Modal -->
+  <div id="studentAuthModal" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 p-6 sm:p-8 rounded-3xl max-w-md w-full shadow-2xl space-y-4">
+      <div class="text-center space-y-1">
+        <div class="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-2xl mx-auto mb-2 shadow-inner">
+          ⚛
+        </div>
+        <h3 class="text-lg font-bold text-white">தேர்வு அனுமதி சரிபார்ப்பு</h3>
+        <p class="text-xs text-slate-400">பதிவு செய்யப்பட்ட மொபைல் எண் மற்றும் பதிவு எண்ணை உள்ளிடவும்</p>
+      </div>
+
+      <div class="space-y-3 pt-2">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">மாணவர் பெயர் *</label>
+          <input type="text" id="authStudentName" placeholder="உங்கள் முழுப் பெயர்" 
+                 class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white outline-none focus:border-amber-400">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">பதிவு எண் / Roll Number *</label>
+          <input type="text" id="authStudentRoll" placeholder="எ.கா: 12A05" 
+                 class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm font-mono text-white uppercase outline-none focus:border-amber-400">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">அனுமதிக்கப்பட்ட 10-இலக்க மொபைல் எண் *</label>
+          <input type="tel" id="authStudentPhone" maxlength="10" placeholder="9876543210" 
+                 class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm font-mono text-white outline-none focus:border-amber-400">
+        </div>
+      </div>
+
+      <div class="pt-3 flex gap-2">
+        <a href="index.html" class="w-1/3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-center font-bold text-xs rounded-xl transition flex items-center justify-center">
+          வெளியேறு
+        </a>
+        <button type="button" id="btnVerifyAndStart" onclick="verifyAndStartExam()" class="w-2/3 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition shadow flex items-center justify-center gap-1.5">
+          <span>தேர்வைத் தொடங்கு</span> ➔
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loadingState" class="text-center py-20 text-slate-400 hidden">
+    <i class="fa-solid fa-spinner fa-spin text-3xl text-amber-400 mb-3"></i>
+    <p class="text-sm font-semibold">வினாத்தாள் தயாராகிறது, காத்திருக்கவும்...</p>
+  </div>
+
+  <!-- 2. Exam Content Container -->
+  <main class="max-w-3xl mx-auto px-4 mt-6 hidden" id="examContent">
+    <!-- Question Palette -->
+    <div class="bg-slate-800/90 border border-slate-700/80 p-4 rounded-2xl mb-6 shadow-md sticky top-16 z-30 backdrop-blur-md">
+      <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-700/80 flex-wrap gap-2">
+        <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+          <span>📑</span> வினா பலகை (Question Palette)
+        </span>
+        <div class="flex items-center gap-3 text-[10px] text-slate-300 font-semibold flex-wrap">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> விடையளித்தவை (<span id="paletteAnsweredCount" class="text-emerald-400 font-bold">0</span>)</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span> மறுபார்வை (<span id="paletteReviewCount" class="text-purple-400 font-bold">0</span>)</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-slate-700 border border-slate-600 inline-block"></span> எழுதாதவை</span>
+        </div>
+      </div>
+      <div id="questionPaletteGrid" class="flex flex-wrap gap-2 max-h-28 overflow-y-auto pr-1"></div>
+    </div>
+
+    <div class="space-y-6" id="questionsContainer"></div>
+
+    <div class="mt-8 pt-4 border-t border-slate-800 flex justify-end">
+      <button onclick="confirmSubmitExam()" id="btnSubmitBottom" class="w-full sm:w-auto px-8 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-lg transition">
+        தேர்வை சமர்ப்பி (Final Submit) ➔
+      </button>
+    </div>
+  </main>
+
+  <!-- 3. Results & Royal Certificate Section -->
+  <main class="max-w-4xl mx-auto px-4 mt-8 hidden space-y-10" id="resultReviewSection">
+    
+    <!-- Score Card Overview -->
+    <div class="bg-slate-800 border border-slate-700 p-6 md:p-8 rounded-3xl text-center shadow-2xl relative overflow-hidden">
+      <div class="text-xs uppercase tracking-widest text-amber-400 font-bold mb-1">தேர்வு முடிவுகள் சுருக்கம்</div>
+      <h2 class="text-xl md:text-2xl font-black text-white" id="resExamTitle">இயற்பியல் தேர்வு</h2>
+      
+      <div class="my-6 flex justify-center items-center gap-6 flex-wrap">
+        <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-700/80 min-w-[140px]">
+          <div class="text-4xl font-extrabold text-amber-400" id="resScore">0</div>
+          <div class="text-xs text-slate-400 mt-1">பெற்ற மதிப்பெண்</div>
+        </div>
+        <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-700/80 min-w-[140px]">
+          <div class="text-4xl font-extrabold text-emerald-400" id="resPercentage">0%</div>
+          <div class="text-xs text-slate-400 mt-1">சதவீதம் (Percentage)</div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto text-xs font-semibold">
+        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700/60 text-slate-300">
+          <span class="block text-slate-400 text-[11px]">மாணவர்:</span>
+          <span id="resStudentName" class="text-white font-bold">-</span>
+        </div>
+        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700/60 text-emerald-400">
+          <span class="block text-slate-400 text-[11px]">சரியானவை:</span>
+          <span id="resCorrect" class="text-emerald-400 font-bold text-base">0</span>
+        </div>
+        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700/60 text-rose-400">
+          <span class="block text-slate-400 text-[11px]">தவறானவை:</span>
+          <span id="resWrong" class="text-rose-400 font-bold text-base">0</span>
+        </div>
+        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700/60 text-amber-400">
+          <span class="block text-slate-400 text-[11px]">எழுதாதவை:</span>
+          <span id="resUnattended" class="text-amber-400 font-bold text-base">0</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-8 flex justify-center items-center gap-3 flex-wrap">
+        <button onclick="downloadCertificate()" class="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:scale-105 active:scale-95 text-slate-950 font-black px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-xl transition flex items-center gap-2 border border-amber-300">
+          <i class="fa-solid fa-award text-base"></i> வண்ணச் சான்றிதழ் அச்சிடு / PDF
+        </button>
+
+        <button type="button" onclick="shareResultWhatsApp()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-xl transition flex items-center gap-2 border border-emerald-400">
+          <i class="fa-brands fa-whatsapp text-lg"></i> வாட்ஸ்அப்பில் பகிர்க (Share Result)
+        </button>
+
+        <button type="button" onclick="reattemptExam()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-xl transition flex items-center gap-2 border border-indigo-400">
+          <i class="fa-solid fa-rotate-right text-base"></i> மீண்டும் பயிற்சி செய் (Re-attempt)
+        </button>
+
+        <a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-6 py-3 rounded-2xl text-xs sm:text-sm transition">
+          முகப்புப் பக்கம் செல்
+        </a>
+      </div>
+    </div>
+
+    <!-- Official Royal Certificate -->
+    <div class="bg-slate-950/60 p-2 sm:p-4 rounded-3xl border border-slate-800">
+      <div id="printableCertificate" class="bg-[#fffdf5] text-slate-900 p-6 sm:p-10 rounded-2xl cert-border relative overflow-hidden max-w-3xl mx-auto select-none">
+        
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.04]">
+          <span class="text-[260px] font-bold text-indigo-950 font-cinzel">⚛</span>
+        </div>
+
+        <div class="border-2 border-amber-700/60 p-6 sm:p-8 rounded-xl relative">
+          
+          <div class="flex items-center justify-between border-b-2 border-amber-800/20 pb-4 mb-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-950 to-indigo-800 text-amber-400 flex items-center justify-center text-3xl font-bold shadow border border-amber-400/40">
+              ⚛
+            </div>
+            <div class="text-center flex-grow px-2">
+              <h2 class="font-cinzel text-xl sm:text-2xl font-black text-indigo-950 tracking-wider uppercase">KALAMNESAN PHYSICS ACADEMY</h2>
+              <p class="text-[11px] sm:text-xs font-bold text-amber-800 tracking-widest mt-0.5">இணையவழி இயற்பியல் கற்றல் & தேர்வு தளம்</p>
+            </div>
+            
+            <div class="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-amber-600 via-amber-300 to-amber-600 shadow-md border-2 border-amber-400/60 flex items-center justify-center shrink-0 overflow-hidden bg-black">
+              <img src="kalam.png.png" 
+                   alt="Dr. APJ Abdul Kalam" 
+                   class="w-full h-full object-cover rounded-full select-none pointer-events-none"
+                   onerror="this.src='kalam.png';">
+            </div>
+          </div>
+
+          <div class="my-5 text-center">
+            <span class="inline-block px-8 py-1.5 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-slate-950 font-black text-xs sm:text-sm tracking-widest uppercase rounded-full shadow border border-amber-300">
+              ★ பாராட்டுச் சான்றிதழ் ★
+            </span>
+          </div>
+
+          <p class="text-center text-xs sm:text-sm text-slate-600 italic">இந்தச் சான்றிதழ் பெருமையுடன் வழங்கப்படுகிறது:</p>
+          
+          <div class="text-center my-3">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-indigo-950 tracking-wide underline decoration-amber-500 decoration-2 underline-offset-8" id="certStudentName">
+              மாணவர் பெயர்
+            </h1>
+            <p class="text-xs font-mono font-bold text-slate-500 mt-2">பதிவு எண் (Roll No): <span id="certRollNo" class="text-slate-900 bg-amber-100 px-2.5 py-0.5 rounded border border-amber-300">12A00</span></p>
+          </div>
+
+          <p class="text-center text-xs sm:text-sm text-slate-700 leading-relaxed max-w-lg mx-auto mt-4">
+            இவர் KALAMNESAN PHYSICS நடத்திய <strong id="certExamTitle" class="text-indigo-950 font-bold">இயற்பியல் அலகுத் தேர்வு</strong>-ல் பங்கேற்று 
+            <strong id="certScore" class="text-emerald-700 font-extrabold text-sm sm:text-base">0/0</strong> மதிப்பெண்களும் 
+            (<strong id="certPercentage" class="text-emerald-700 font-extrabold text-sm sm:text-base">0%</strong>) பெற்று 
+            சிறப்பான தேர்ச்சியை வெளிப்படுத்தியுள்ளார் எனச் சான்றளிக்கப்படுகிறது.
+          </p>
+
+          <div class="mt-8 pt-5 border-t-2 border-amber-800/20 flex justify-between items-end">
+            <div class="text-left min-w-[130px]">
+              <div class="text-[11px] text-slate-500 font-semibold">வழங்கப்பட்ட தேதி:</div>
+              <div class="font-bold text-slate-800 text-xs sm:text-sm" id="certDate">-</div>
+              <div class="text-[10px] text-emerald-700 font-mono font-bold mt-1.5 flex items-center gap-1">
+                <span>✓</span> Verified E-Certificate
+              </div>
+            </div>
+
+            <div class="flex flex-col items-center justify-center">
+              <div class="relative w-24 h-24 flex items-center justify-center select-none pointer-events-none">
+                <div class="absolute inset-0 rounded-full border-2 border-amber-800/60"></div>
+                <div class="absolute inset-1 rounded-full border border-dashed border-amber-700/80"></div>
+                <div class="absolute inset-2.5 rounded-full border border-amber-800/50"></div>
+
+                <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                  <path id="upperSealPath" d="M 16,50 A 34,34 0 0,1 84,50" fill="none" />
+                  <path id="lowerSealPath" d="M 84,50 A 34,34 0 0,1 16,50" fill="none" />
+                  
+                  <text class="text-[7px] font-black uppercase fill-amber-950 tracking-[1.5px]" style="font-family: 'Cinzel', serif;">
+                    <textPath href="#upperSealPath" startOffset="50%" text-anchor="middle">
+                      KALAMNESAN PHYSICS
+                    </textPath>
+                  </text>
+                  <text class="text-[6.5px] font-bold uppercase fill-amber-900 tracking-[1.2px]" style="font-family: 'Cinzel', serif;">
+                    <textPath href="#lowerSealPath" startOffset="50%" text-anchor="middle">
+                      ★ OFFICIAL SEAL ★
+                    </textPath>
+                  </text>
+                </svg>
+
+                <div class="w-11 h-11 rounded-full bg-amber-500/10 border border-amber-700/40 flex flex-col items-center justify-center text-center shadow-inner">
+                  <span class="text-xs font-bold text-indigo-950 leading-none">⚛</span>
+                  <span class="text-[6px] font-black tracking-tight text-amber-950 uppercase mt-0.5" style="font-family: 'Cinzel', serif;">
+                    PHYSICS
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-center min-w-[150px]">
+              <div class="h-12 flex items-end justify-center mb-1">
+                <img src="signature.png" 
+                     alt="M. Ramesh Signature" 
+                     class="h-11 max-w-[145px] object-contain select-none pointer-events-none mix-blend-multiply">
+              </div>
+              <div class="text-xs font-bold text-slate-800 tracking-wide">M. RAMESH, M.Sc., B.Ed.</div>
+              <div class="text-[10px] text-slate-600 font-semibold">முதுகலை இயற்பியல் ஆசிரியர்</div>
+              <div class="text-[9px] text-amber-800 font-bold uppercase tracking-wider">KALAMNESAN PHYSICS</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 3 Rankers -->
+    <div class="bg-slate-800/90 border border-slate-700/80 p-5 sm:p-6 rounded-3xl shadow-xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+        <h3 class="text-base sm:text-lg font-bold text-amber-400 flex items-center gap-2">
+          <span>🏆</span> தேர்வின் முதல் 3 வெற்றியாளர்கள் (Top 3 Rankers)
+        </h3>
+        <span class="text-[11px] text-slate-400">அதிக மதிப்பெண் பெற்றவர்கள்</span>
+      </div>
+
+      <div id="topRankersContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="p-4 text-center text-xs text-slate-400 sm:col-span-3">தரவரிசை பட்டியல் கணக்கிடப்படுகிறது...</div>
+      </div>
+    </div>
+    
+    <!-- Solutions & Explanations -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold text-amber-300 flex items-center gap-2">
+          <span>📖</span> வினாக்கள் & விரிவான தீர்வுகள் (Solution & Review)
+        </h3>
+        <span class="text-xs text-slate-400">சரி / தவறு மற்றும் வழிமுறைகள்</span>
+      </div>
+
+      <div id="solutionReviewContainer" class="space-y-6"></div>
+    </div>
+
+  </main>
+
+  <!-- Full Paper Modal -->
+  <div id="fullPaperModal" style="display:none;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-100">
+      <div class="p-4 sm:p-5 bg-slate-800 border-b border-slate-700 flex justify-between items-center">
+        <div>
+          <h3 id="paperModalTitle" class="font-bold text-sm sm:text-base text-amber-400">முழு வினாத்தாள் பார்வை</h3>
+          <p id="paperModalSub" class="text-[11px] text-slate-400 mt-0.5">அனைத்து வினாக்களின் தொகுப்பு</p>
+        </div>
+        <button type="button" onclick="closeFullPaperModal()" class="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 text-white font-bold flex items-center justify-center text-sm transition">
+          ✕
+        </button>
+      </div>
+
+      <div id="paperModalQuestionsList" class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-grow bg-slate-950/60"></div>
+
+      <div class="p-3.5 bg-slate-800 border-t border-slate-700 flex justify-between items-center text-xs">
+        <span class="text-slate-400 text-[11px]">வினாக்களை வாசித்துவிட்டு மூடிவிட்டுத் தேர்வைத் தொடரலாம்</span>
+        <button type="button" onclick="closeFullPaperModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-5 py-2 rounded-xl transition">
+          மூடுக (Close)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://agymotgpqfghoutettpv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFneW1vdGdwcWZnaG91dGV0dHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NjA5NzIsImV4cCI6MjEwOTUzNjk3Mn0.KeTw76EwZQimmoPkxzVTWfd0p6WxavLsnhrZCsWmYec';
+    
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let examData = null;
+    let questionsList = [];
+    let userAnswers = {};
+    let reviewMarked = {};
+    let timerInterval = null;
+    let studentInfo = { name: '', roll: '', phone: '' };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const examId = urlParams.get('id');
+
+    // KaTeX Math Formatter
+    function formatPhysicsText(text) {
+      if (!text || typeof text !== 'string') return text || '';
+      let out = text;
+      out = out.replace(/ε0/g, '$\\varepsilon_0$');
+      out = out.replace(/ε_0/g, '$\\varepsilon_0$');
+      out = out.replace(/N\s*C\^-1/g, '$\\text{N}\\cdot\\text{C}^{-1}$');
+      out = out.replace(/N\s*m/g, '$\\text{N}\\cdot\\text{m}$');
+      out = out.replace(/μF/g, '$\\mu\\text{F}$');
+      out = out.replace(/(\d+)\s*\^\s*(-?\d+)/g, '$$$1^{$2}$$');
+      out = out.replace(/\b([qQAaBb])([1234])\b/g, '$$$1_{$2}$$');
+      out = out.replace(/\$\$/g, '$');
+      return out;
+    }
+
+    // Student Authentication & Permission Check
+    async function verifyAndStartExam() {
+      const nameEl = document.getElementById('authStudentName');
+      const rollEl = document.getElementById('authStudentRoll');
+      const phoneEl = document.getElementById('authStudentPhone');
+      const btn = document.getElementById('btnVerifyAndStart');
+
+      const name = nameEl ? nameEl.value.trim() : '';
+      const roll = rollEl ? rollEl.value.trim() : '';
+      const phone = phoneEl ? phoneEl.value.trim() : '';
+
+      if (!name || !roll || phone.length !== 10 || isNaN(phone)) {
+        alert('தயவுசெய்து உங்கள் பெயர், பதிவு எண் மற்றும் 10-இலக்க மொபைல் எண்ணை சரியாக உள்ளிடவும்!');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "சரிபார்க்கப்படுகிறது...";
+
+      if (!examData) {
+        await fetchExamData();
+      }
+
+      try {
+        const { data: studentList, error: stErr } = await client
+          .from('paid_students')
+          .select('*')
+          .eq('phone_number', phone);
+
+        if (stErr || !studentList || studentList.length === 0) {
+          btn.disabled = false;
+          btn.innerText = "தேர்வைத் தொடங்கு ➔";
+          alert(`⚠️ மன்னிக்கவும் ${name}! உங்கள் மொபைல் எண் (${phone}) அனுமதிக்கப்படவில்லை.\n\nதயவுசெய்து ஆசிரியர் M. Ramesh (8072524484) அவர்களைத் தொடர்பு கொள்ளவும்.`);
+          return;
+        }
+
+        const allowedStudent = studentList[0];
+        const examGrade = parseInt(examData?.grade) || 12;
+        const studentGrade = parseInt(allowedStudent.grade) || 0;
+
+        if (studentGrade !== 0 && studentGrade !== examGrade) {
+          btn.disabled = false;
+          btn.innerText = "தேர்வைத் தொடங்கு ➔";
+          alert(`⚠️ அனுமதி மறுக்கப்பட்டது!\n\nநீங்கள் Class ${studentGrade} பிரிவில் அனுமதிக்கப்பட்டுள்ளீர்கள். ஆனால் இது Class ${examGrade} தேர்வு!`);
+          return;
+        }
+
+        studentInfo = { name, roll, phone };
+
+        const modal = document.getElementById('studentAuthModal');
+        if (modal) modal.style.display = 'none';
+
+        renderExamUI();
+
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerText = "தேர்வைத் தொடங்கு ➔";
+        alert("அனுமதி சரிபார்ப்பதில் பிழை: " + err.message);
+      }
+    }
+
+    // Fetch and Robustly Parse Questions
+    async function fetchExamData() {
+      const loadingEl = document.getElementById('loadingState');
+
+      if (!examId) {
+        if (loadingEl) {
+          loadingEl.classList.remove('hidden');
+          loadingEl.innerHTML = `
+            <div class="p-6 bg-slate-800 rounded-2xl border border-rose-500/50 max-w-md mx-auto text-center">
+              <p class="text-rose-400 font-bold mb-3">⚠️ தேர்வுக்கான ID கிடைக்கவில்லை!</p>
+              <a href="index.html" class="inline-block px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs">முகப்புப் பக்கத்திற்குச் செல்லவும்</a>
+            </div>
+          `;
+        }
+        return;
+      }
+
+      try {
+        const { data, error } = await client.from('exams').select('*').eq('id', examId).single();
+        if (error || !data) throw new Error("தேர்வு விவரங்கள் கிடைக்கவில்லை.");
+
+        examData = data;
+
+        let raw = examData.questions;
+        if (typeof raw === 'string') {
+          try {
+            raw = JSON.parse(raw);
+          } catch(e) {
+            raw = [];
+          }
+        }
+
+        if (Array.isArray(raw)) {
+          questionsList = raw;
+        } else if (raw && Array.isArray(raw.questions)) {
+          questionsList = raw.questions;
+        } else {
+          questionsList = [];
+        }
+
+      } catch (err) {
+        console.error("fetchExamData Error:", err);
+      }
+    }
+
+    function extractQuestionDetails(q, isEnglish = false) {
+      let text = isEnglish ? (q.question_en || q.question || q.q || q.question_ta || '') : (q.question_ta || q.question || q.q || q.question_en || '');
+      let rawOptions = isEnglish ? (q.options_en || q.options || q.choices || q.options_ta) : (q.options_ta || q.options || q.choices || q.options_en);
+
+      let optionsArray = [];
+      if (Array.isArray(rawOptions)) {
+        optionsArray = rawOptions;
+      } else if (rawOptions && typeof rawOptions === 'object') {
+        ['a', 'b', 'c', 'd'].forEach(k => { if (rawOptions[k] !== undefined) optionsArray.push(rawOptions[k]); });
+        if (optionsArray.length === 0) optionsArray = Object.values(rawOptions);
+      }
+
+      let img = q.image_base64 || q.image || q.img || null;
+      let correctIdx = 0;
+      let rawAns = (q.correct_answer !== undefined) ? q.correct_answer : ((q.ans !== undefined) ? q.ans : ((q.correct !== undefined) ? q.correct : q.correct_option));
+
+      if (typeof rawAns === 'string') {
+        const map = { 'a':0, 'b':1, 'c':2, 'd':3, 'A':0, 'B':1, 'C':2, 'D':3 };
+        correctIdx = map[rawAns.trim()] !== undefined ? map[rawAns.trim()] : (parseInt(rawAns) || 0);
+      } else if (typeof rawAns === 'number') {
+        correctIdx = rawAns;
+      }
+
+      let exp = (isEnglish ? (q.explanation_en || q.exp_en || q.explanation) : (q.explanation_ta || q.exp_ta || q.explanation)) || q.exp || q.solution || '';
+
+      text = formatPhysicsText(text);
+      optionsArray = optionsArray.map(opt => formatPhysicsText(opt));
+      exp = formatPhysicsText(exp);
+
+      return { text, options: optionsArray, image: img, correct: correctIdx, exp };
+    }
+
+    function renderExamUI() {
+      if (!examData) return;
+
+      const loadingEl = document.getElementById('loadingState');
+      if (loadingEl) loadingEl.classList.add('hidden');
+
+      const contentEl = document.getElementById('examContent');
+      if (contentEl) contentEl.classList.remove('hidden');
+
+      const isEnglish = (examData.medium === 'ENGLISH');
+      const dTitle = examData.exam_title || examData.title || 'Online Physics Test';
+      
+      document.getElementById('examHeaderTitle').textContent = dTitle;
+      document.getElementById('examHeaderSub').textContent = `${examData.exam_type || 'EXAM'} | ${isEnglish ? 'Questions' : 'வினாக்கள்'}: ${questionsList.length}`;
+
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = '';
+
+      if (questionsList.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center bg-slate-800 rounded-2xl border border-slate-700">
+            <p class="text-amber-400 font-bold">இந்தத் தேர்வில் வினாக்கள் எதுவும் பதிவேற்றப்படவில்லை!</p>
+            <a href="index.html" class="inline-block mt-3 px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs">முகப்புப் பக்கம் செல்</a>
+          </div>
+        `;
+        return;
+      }
+
+      const pos = (examData.positive_marks != null) ? parseFloat(examData.positive_marks) : 1;
+      const neg = (examData.negative_marks != null) ? parseFloat(examData.negative_marks) : 0;
+      const optionLetters = ['A', 'B', 'C', 'D'];
+
+      questionsList.forEach((q, index) => {
+        const qCard = document.createElement('div');
+        qCard.className = "bg-slate-800/90 border border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-3 transition";
+        qCard.id = `qCard_${index}`;
+
+        const qData = extractQuestionDetails(q, isEnglish);
+
+        let optionsHtml = '';
+        qData.options.forEach((opt, optIndex) => {
+          optionsHtml += `
+            <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-700/50 cursor-pointer text-xs md:text-sm transition">
+              <input type="radio" name="q_${index}" value="${optIndex}" onchange="selectAnswer(${index}, ${optIndex})" class="accent-amber-500 w-4 h-4">
+              <span class="font-bold font-mono text-amber-400">${optionLetters[optIndex]})</span>
+              <span class="text-slate-200">${opt}</span>
+            </label>
+          `;
+        });
+
+        let imageHtml = qData.image ? `<div class="my-3 text-center bg-white p-2.5 rounded-2xl border border-slate-600 block shadow-md"><img src="${qData.image}" class="max-h-64 mx-auto object-contain rounded-lg"></div>` : '';
+        const qPos = (q && q.positive_marks != null) ? q.positive_marks : pos;
+        const qNeg = (q && q.negative_marks != null) ? q.negative_marks : neg;
+        const isMarked = !!reviewMarked[index];
+
+        qCard.innerHTML = `
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">${isEnglish ? 'Question' : 'வினா'} ${index + 1}</span>
+            <span class="text-[11px] text-slate-400 font-mono">${isEnglish ? 'Marks' : 'மதிப்பெண்'}: +${qPos} / -${qNeg}</span>
+          </div>
+          <div class="text-sm md:text-base font-medium text-white mb-2 leading-relaxed">${qData.text}</div>
+          ${imageHtml}
+          <div class="space-y-2.5 mt-3">${optionsHtml}</div>
+
+          <div class="pt-2 border-t border-slate-700/60 flex justify-end">
+            <button type="button" id="reviewBtn_${index}" onclick="toggleReviewMark(${index})" 
+                    class="px-3.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition ${isMarked ? 'bg-purple-600 text-white border-purple-400' : 'bg-slate-900/80 hover:bg-slate-700 text-slate-300 border-slate-700'}">
+              <span>🟣</span> ${isMarked ? (isEnglish ? 'Marked for Review' : 'மறுபார்வைக்குக் குறிக்கப்பட்டுள்ளது') : (isEnglish ? 'Mark for Review' : 'மறுபார்வைக்குக் குறி (Review)')}
+            </button>
+          </div>
+        `;
+        container.appendChild(qCard);
+      });
+
+      setTimeout(() => {
+        if (window.renderMathInElement) {
+          renderMathInElement(container, {
+            delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
+            throwOnError: false
+          });
+        }
+      }, 70);
+
+      startTimer(examData.duration_minutes || 15);
+      updateQuestionPalette();
+    }
+
+    function selectAnswer(qIdx, optIdx) {
+      userAnswers[qIdx] = optIdx;
+      updateQuestionPalette();
+    }
+
+    function toggleReviewMark(qIdx) {
+      reviewMarked[qIdx] = !reviewMarked[qIdx];
+      const btn = document.getElementById(`reviewBtn_${qIdx}`);
+      const isEnglish = (examData && examData.medium === 'ENGLISH');
+      if (btn) {
+        btn.className = reviewMarked[qIdx]
+          ? "px-3.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition bg-purple-600 text-white border-purple-400"
+          : "px-3.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition bg-slate-900/80 hover:bg-slate-700 text-slate-300 border-slate-700";
+        btn.innerHTML = `<span>🟣</span> ${reviewMarked[qIdx] ? (isEnglish ? 'Marked for Review' : 'மறுபார்வைக்குக் குறிக்கப்பட்டுள்ளது') : (isEnglish ? 'Mark for Review' : 'மறுபார்வைக்குக் குறி (Review)')}`;
+      }
+      updateQuestionPalette();
+    }
+
+    function updateQuestionPalette() {
+      const palette = document.getElementById('questionPaletteGrid');
+      if (!palette || !questionsList) return;
+
+      let answeredCount = 0;
+      let reviewCount = 0;
+
+      palette.innerHTML = questionsList.map((_, idx) => {
+        const isAnswered = (userAnswers[idx] !== undefined);
+        const isMarked = !!reviewMarked[idx];
+        if (isAnswered) answeredCount++;
+        if (isMarked) reviewCount++;
+
+        let btnClass = 'bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold border-slate-700';
+        if (isMarked) btnClass = 'bg-purple-600 hover:bg-purple-500 text-white font-black shadow-sm border-purple-400 ring-1 ring-purple-300';
+        else if (isAnswered) btnClass = 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black shadow-sm border-emerald-400';
+
+        return `
+          <button type="button" onclick="jumpToQuestion(${idx})" class="w-8 h-8 rounded-xl text-xs flex items-center justify-center border transition ${btnClass}">
+            ${idx + 1}
+          </button>
+        `;
+      }).join('');
+
+      document.getElementById('paletteAnsweredCount').textContent = answeredCount;
+      document.getElementById('paletteReviewCount').textContent = reviewCount;
+    }
+
+    function jumpToQuestion(idx) {
+      const target = document.getElementById(`qCard_${idx}`);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.classList.add('ring-2', 'ring-amber-400');
+        setTimeout(() => target.classList.remove('ring-2', 'ring-amber-400'), 1500);
+      }
+    }
+
+    function startTimer(durationMinutes) {
+      let remainingSeconds = durationMinutes * 60;
+      const timerEl = document.getElementById('timeLeft');
+      const timerBox = document.getElementById('timerBox');
+      const warningBanner = document.getElementById('timeWarningBanner');
+      let warned = false;
+
+      if (timerInterval) clearInterval(timerInterval);
+
+      timerInterval = setInterval(() => {
+        remainingSeconds--;
+        const mins = Math.floor(remainingSeconds / 60);
+        const secs = remainingSeconds % 60;
+        if (timerEl) timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+        if (remainingSeconds <= 300 && remainingSeconds > 0) {
+          if (timerBox) timerBox.className = "bg-rose-600 text-white border-2 border-rose-300 px-3 py-1.5 rounded-xl text-sm font-mono font-black flex items-center gap-2 animate-pulse shadow-lg";
+          if (!warned && warningBanner) {
+            warningBanner.classList.remove('hidden');
+            setTimeout(() => warningBanner.classList.add('hidden'), 6000);
+            warned = true;
+          }
+        }
+
+        if (remainingSeconds <= 0) {
+          clearInterval(timerInterval);
+          alert('தேர்வுக்கான கால அவகாசம் முடிவடைந்தது! உங்கள் தேர்வு தானாகச் சமர்ப்பிக்கப்படுகிறது.');
+          submitExam();
+        }
+      }, 1000);
+    }
+
+    function confirmSubmitExam() {
+      if (confirm('தேர்வை சமர்ப்பிக்க விரும்புகிறீர்களா?')) submitExam();
+    }
+
+    // Instant Zero-Lag Submit Function
+    async function submitExam() {
+      if (timerInterval) clearInterval(timerInterval);
+
+      const isEnglish = (examData && examData.medium === 'ENGLISH');
+      const posMark = (examData && examData.positive_marks != null) ? parseFloat(examData.positive_marks) : 1;
+      const negMark = (examData && examData.negative_marks != null) ? parseFloat(examData.negative_marks) : 0;
+
+      let correct = 0;
+      let wrong = 0;
+      let unattended = 0;
+      let totalScore = 0;
+
+      questionsList.forEach((q, index) => {
+        const qData = extractQuestionDetails(q, isEnglish);
+        const selected = userAnswers[index];
+        if (selected === undefined) {
+          unattended++;
+        } else if (parseInt(selected) === parseInt(qData.correct)) {
+          correct++;
+          totalScore += posMark;
+        } else {
+          wrong++;
+          totalScore -= negMark;
+        }
+      });
+
+      const maxMarks = (questionsList.length > 0) ? (questionsList.length * posMark) : 0;
+      const percentage = (maxMarks > 0) ? Math.max(0, Math.round((totalScore / maxMarks) * 100)) : 0;
+
+      // 1. Instant UI Transition
+      document.getElementById('examContent').classList.add('hidden');
+      document.getElementById('timerBox').classList.add('hidden');
+      const btnTop = document.getElementById('btnSubmitTop');
+      if (btnTop) btnTop.classList.add('hidden');
+
+      const examTitle = examData ? (examData.exam_title || examData.title) : 'இயற்பியல் தேர்வு';
+      document.getElementById('resExamTitle').textContent = examTitle;
+      document.getElementById('resScore').textContent = `${totalScore} / ${maxMarks}`;
+      document.getElementById('resPercentage').textContent = `${percentage}%`;
+      document.getElementById('resStudentName').textContent = studentInfo.name || 'மாணவர்';
+      document.getElementById('resCorrect').textContent = correct;
+      document.getElementById('resWrong').textContent = wrong;
+      document.getElementById('resUnattended').textContent = unattended;
+
+      document.getElementById('certStudentName').textContent = studentInfo.name || 'மாணவர்';
+      document.getElementById('certRollNo').textContent = studentInfo.roll || '-';
+      document.getElementById('certExamTitle').textContent = examTitle;
+      document.getElementById('certScore').textContent = `${totalScore} / ${maxMarks}`;
+      document.getElementById('certPercentage').textContent = `${percentage}%`;
+      document.getElementById('certDate').textContent = new Date().toLocaleDateString('ta-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      renderSolutionReview(isEnglish);
+      document.getElementById('resultReviewSection').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // 2. Background Asynchronous Save
+      client.from('exam_submissions').insert([{
+        exam_id: examData ? examData.id : null,
+        student_name: studentInfo.name || 'மாணவர்',
+        roll_number: studentInfo.roll || 'N/A',
+        phone_number: studentInfo.phone || '0000000000',
+        total_questions: questionsList.length,
+        total_marks_obtained: totalScore,
+        maximum_marks: maxMarks,
+        percentage: percentage,
+        correct_count: correct,
+        wrong_count: wrong,
+        unattended_count: unattended
+      }]).then(() => {
+        if (examData && examData.id) {
+          loadTopRankers(examData.id);
+        }
+      }).catch(err => {
+        console.warn("Save Warning:", err);
+      });
+    }
+
+    function renderSolutionReview(isEnglish) {
+      const container = document.getElementById('solutionReviewContainer');
+      container.innerHTML = '';
+      const optionLetters = ['A', 'B', 'C', 'D'];
+
+      questionsList.forEach((q, idx) => {
+        const qData = extractQuestionDetails(q, isEnglish);
+        const userSelected = userAnswers[idx];
+        const isAnswered = (userSelected !== undefined);
+        const isCorrect = (isAnswered && parseInt(userSelected) === parseInt(qData.correct));
+
+        let statusBadge = !isAnswered 
+          ? `<span class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">${isEnglish ? 'Unattended' : 'எழுதப்படவில்லை'}</span>`
+          : (isCorrect ? `<span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">✓ ${isEnglish ? 'Correct' : 'சரி'}</span>`
+                       : `<span class="text-xs font-bold text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20">✗ ${isEnglish ? 'Wrong' : 'தவறு'}</span>`);
+
+        const optionsHtml = qData.options.map((opt, optIdx) => {
+          const isThisCorrectKey = (parseInt(qData.correct) === optIdx);
+          const isThisUserSelected = (parseInt(userSelected) === optIdx);
+          let borderCls = 'border-slate-700 bg-slate-900/60 text-slate-300';
+          let indicator = '';
+
+          if (isThisCorrectKey) {
+            borderCls = 'border-emerald-500 bg-emerald-950/40 text-emerald-200 font-semibold';
+            indicator = `<span class="ml-auto text-xs text-emerald-400 font-bold shrink-0">✓ ${isEnglish ? 'Correct Key' : 'சரியான விடை'}</span>`;
+          }
+          if (isThisUserSelected && !isThisCorrectKey) {
+            borderCls = 'border-rose-500 bg-rose-950/40 text-rose-200 font-semibold';
+            indicator = `<span class="ml-auto text-xs text-rose-400 font-bold shrink-0">✗ ${isEnglish ? 'Your Choice' : 'உங்கள் தவறான தேர்வு'}</span>`;
+          }
+
+          return `<div class="p-3 rounded-xl border ${borderCls} flex items-start gap-2.5 text-xs md:text-sm"><span class="font-bold font-mono">${optionLetters[optIdx]})</span><span class="leading-relaxed">${opt}</span>${indicator}</div>`;
+        }).join('');
+
+        let imageHtml = qData.image ? `<div class="my-3 text-center bg-white p-2 rounded-xl border border-slate-600 inline-block shadow"><img src="${qData.image}" class="max-h-52 mx-auto object-contain rounded-lg"></div>` : '';
+
+        const reviewCard = document.createElement('div');
+        reviewCard.className = "bg-slate-800/90 border border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-3";
+        reviewCard.innerHTML = `
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold text-slate-400">${isEnglish ? 'Question' : 'வினா'} ${idx + 1}</span>
+            ${statusBadge}
+          </div>
+          <div class="text-sm md:text-base font-medium text-white leading-relaxed">${qData.text}</div>
+          ${imageHtml}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2">${optionsHtml}</div>
+          ${qData.exp ? `<div class="mt-3.5 p-4 bg-amber-500/10 rounded-2xl border border-amber-500/30 text-xs text-amber-200 leading-relaxed"><div class="flex items-center gap-2 mb-1.5 text-amber-400 font-bold text-sm"><span>💡</span> ${isEnglish ? 'Physics Solution:' : 'ஆசிரியர் விரிவான தீர்வு:'}</div><div class="text-slate-200 leading-relaxed pl-1">${qData.exp}</div></div>` : ''}
+        `;
+        container.appendChild(reviewCard);
+      });
+
+      setTimeout(() => {
+        if (window.renderMathInElement) {
+          renderMathInElement(container, {
+            delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
+            throwOnError: false
+          });
+        }
+      }, 70);
+    }
+
+    function downloadCertificate() { window.print(); }
+
+    function openFullPaperModal() {
+      if (!questionsList || questionsList.length === 0) return alert("வினாக்கள் இன்னும் தயாராகவில்லை!");
+      const isEnglish = (examData && examData.medium === 'ENGLISH');
+      const title = examData ? (examData.exam_title || examData.title) : 'வினாத்தாள்';
+
+      document.getElementById('paperModalTitle').textContent = `${title} — ${isEnglish ? 'Question Paper' : 'முழு வினாத்தாள்'}`;
+      document.getElementById('paperModalSub').textContent = `${isEnglish ? 'Total Questions' : 'மொத்த வினாக்கள்'}: ${questionsList.length}`;
+
+      const container = document.getElementById('paperModalQuestionsList');
+      const optionLetters = ['A', 'B', 'C', 'D'];
+
+      container.innerHTML = questionsList.map((q, idx) => {
+        const qData = extractQuestionDetails(q, isEnglish);
+        const optionsHtml = qData.options.map((opt, optIdx) => `
+          <div class="p-2.5 rounded-xl border border-slate-800 bg-slate-900/80 text-xs md:text-sm text-slate-300 flex items-start gap-2">
+            <span class="font-bold font-mono text-amber-400">${optionLetters[optIdx]})</span>
+            <span class="leading-relaxed">${opt}</span>
+          </div>
+        `).join('');
+
+        let imageHtml = qData.image ? `<div class="my-2.5 text-center bg-white p-2 rounded-xl border border-slate-700 inline-block"><img src="${qData.image}" class="max-h-48 mx-auto object-contain rounded-lg"></div>` : '';
+
+        return `
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-2.5">
+            <span class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">Q${idx + 1}</span>
+            <div class="text-sm md:text-base font-medium text-white leading-relaxed">${qData.text}</div>
+            ${imageHtml}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">${optionsHtml}</div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('fullPaperModal').style.display = 'flex';
+      setTimeout(() => {
+        if (window.renderMathInElement) {
+          renderMathInElement(container, {
+            delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
+            throwOnError: false
+          });
+        }
+      }, 50);
+    }
+
+    function closeFullPaperModal() { document.getElementById('fullPaperModal').style.display = 'none'; }
+
+    function shareResultWhatsApp() {
+      const name = studentInfo.name || 'மாணவர்';
+      const roll = studentInfo.roll || '-';
+      const title = examData ? (examData.exam_title || examData.title) : 'இயற்பியல் அலகுத் தேர்வு';
+      const scoreText = document.getElementById('resScore')?.textContent || '0';
+      const percentText = document.getElementById('resPercentage')?.textContent || '0%';
+
+      const msg = `⚛️ *KALAMNESAN PHYSICS ONLINE TEST* ⚛️%0A%0A` +
+                  `👤 *மாணவர்:* ${name} (பதிவு எண்: ${roll})%0A` +
+                  `📝 *தேர்வு:* ${title}%0A` +
+                  `🎯 *பெற்ற மதிப்பெண்:* ${scoreText}%0A` +
+                  `📊 *சதவீதம்:* ${percentText}%0A%0A` +
+                  `✨ _கலாம்நேசன் இயற்பியல் தேர்வுத் தளத்தில் கலந்துகொண்டு சிறப்பான தேர்ச்சியைப் பெற்றுள்ளார்!_`;
+
+      window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+    }
+
+    function reattemptExam() {
+      if (!confirm('இந்தத் தேர்வை மீண்டும் புதிதாக எழுத விரும்புகிறீர்களா?')) return;
+      userAnswers = {};
+      reviewMarked = {};
+      document.getElementById('resultReviewSection').classList.add('hidden');
+      document.getElementById('examContent').classList.remove('hidden');
+      document.getElementById('timerBox').classList.remove('hidden');
+      document.getElementById('btnSubmitTop').classList.remove('hidden');
+      renderExamUI();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function loadTopRankers(currentExamId) {
+      const container = document.getElementById('topRankersContainer');
+      if (!container || !currentExamId) return;
+
+      try {
+        const { data } = await client
+          .from('exam_submissions')
+          .select('student_name, roll_number, total_marks_obtained, maximum_marks, percentage')
+          .eq('exam_id', currentExamId)
+          .order('total_marks_obtained', { ascending: false })
+          .limit(10);
+
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div class="p-3 text-center text-xs text-slate-400 sm:col-span-3">இன்னும் தரவரிசைப் பட்டியல் பதிவாகவில்லை.</div>';
+          return;
+        }
+
+        const uniqueRankers = [];
+        const seen = new Set();
+        data.forEach(item => {
+          const key = (item.roll_number || item.student_name).trim().toUpperCase();
+          if (!seen.has(key)) { seen.add(key); uniqueRankers.push(item); }
+        });
+
+        const topThree = uniqueRankers.slice(0, 3);
+        const badges = [
+          { medal: '🥇 1st Rank', color: 'from-amber-400 to-yellow-600', text: 'text-amber-300', border: 'border-amber-400/50' },
+          { medal: '🥈 2nd Rank', color: 'from-slate-300 to-slate-500', text: 'text-slate-200', border: 'border-slate-300/40' },
+          { medal: '🥉 3rd Rank', color: 'from-amber-700 to-amber-900', text: 'text-amber-600', border: 'border-amber-700/50' }
+        ];
+
+        container.innerHTML = topThree.map((st, idx) => `
+          <div class="bg-slate-900/90 border ${badges[idx].border} p-4 rounded-2xl text-center shadow-lg flex flex-col justify-between">
+            <div class="inline-block px-3 py-1 bg-gradient-to-r ${badges[idx].color} text-slate-950 font-black text-[11px] rounded-full mx-auto mb-2 uppercase">
+              ${badges[idx].medal}
+            </div>
+            <h4 class="font-bold text-white text-sm truncate">${st.student_name}</h4>
+            <p class="text-[10px] font-mono text-slate-400">பதிவு எண்: ${st.roll_number || '-'}</p>
+            <div class="mt-3 pt-2 border-t border-slate-800 flex justify-around text-xs">
+              <div><span class="block text-[10px] text-slate-400">மதிப்பெண்</span><span class="font-bold ${badges[idx].text}">${st.total_marks_obtained}/${st.maximum_marks}</span></div>
+              <div><span class="block text-[10px] text-slate-400">சதவீதம்</span><span class="font-bold text-emerald-400">${st.percentage}%</span></div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) { container.innerHTML = '<div class="p-3 text-center text-xs text-slate-500 sm:col-span-3">தரவரிசை ஏற்றுவதில் பிழை.</div>'; }
+    }
+
+    // Preload Exam Data
+    fetchExamData();
+  </script>
+</body>
+</html>

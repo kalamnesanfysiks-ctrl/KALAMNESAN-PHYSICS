@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KALAMNESAN PHYSICS - ஆசிரியர் கட்டுப்பாட்டு மையம் (Admin)</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- 🧮 KaTeX for Physics Math Preview -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;600;700;800&display=swap');
+    body { font-family: 'Mukta Malar', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-indigo-950 text-white shadow-lg sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-amber-400 p-0.5 shadow">
+          <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-bold text-amber-400 text-lg">
+            ⚛
+          </div>
+        </div>
+        <div>
+          <h1 class="text-base md:text-lg font-bold tracking-wider text-amber-300">KALAMNESAN PHYSICS</h1>
+          <p class="text-xs text-indigo-200">ஆசிரியர் கட்டுப்பாட்டு மையம் (Master Admin Dashboard)</p>
+        </div>
+      </div>
+      <a href="index.html" class="bg-indigo-900 hover:bg-indigo-800 text-xs text-indigo-200 hover:text-white px-3 py-1.5 rounded-xl border border-indigo-700 transition">
+        மாணவர் முகப்புப் பக்கம் ➔
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+
+    <!-- 1️⃣ புதிய வினாத்தாள் பதிவேற்றம் -->
+    <section class="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+      <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <span>📤</span> புதிய வினாத்தாள் பதிவேற்றம் (Upload Exam)
+        </h2>
+        <span class="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1 rounded-full">JSON Mode</span>
+      </div>
+
+      <form id="uploadForm" class="space-y-4" onsubmit="handleExamUpload(event)">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">தேர்வின் தலைப்பு *</label>
+            <input type="text" id="examTitle" required placeholder="எ.கா: Class 12 - நிலை மின்னியல் அலகுத் தேர்வு" 
+                   class="w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none focus:border-indigo-600">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">முதன்மைப் பிரிவு (Main Exam Type) *</label>
+            <select id="examType" onchange="updateSubCategoryOptions()" class="w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none focus:border-indigo-600 bg-white font-semibold text-indigo-950">
+              <option value="BOARD">State Board (மாநிலப் பாடத்திட்டம்)</option>
+              <option value="NEET">NEET Pattern</option>
+              <option value="JEE">JEE Pattern</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">சப்-ஃபோல்டர் பிரிவு (Sub Category) *</label>
+            <select id="examSubCategory" class="w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none focus:border-indigo-600 bg-amber-50/50 font-bold text-amber-950">
+              <!-- JS auto fills -->
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">வகுப்பு (Grade) *</label>
+            <select id="examGrade" class="w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none focus:border-indigo-600 bg-white">
+              <option value="12">Class 12 (12-ஆம் வகுப்பு)</option>
+              <option value="11">Class 11 (11-ஆம் வகுப்பு)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">பயிற்றுமொழி (Medium) *</label>
+            <select id="examMedium" class="w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none focus:border-indigo-600 bg-white">
+              <option value="TAMIL">தமிழ் வழி (Tamil Medium)</option>
+              <option value="ENGLISH">ஆங்கில வழி (English Medium)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">கால அளவு (நிமிடங்கள்)</label>
+            <input type="number" id="examDuration" value="15" min="5" 
+                   class="w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none focus:border-indigo-600">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">மதிப்பெண் (+சரி / -தவறு)</label>
+            <div class="flex gap-2">
+              <input type="number" id="posMarks" value="1" class="w-1/2 px-2 py-2.5 border rounded-xl text-sm text-center font-bold text-emerald-700">
+              <input type="number" id="negMarks" value="0" class="w-1/2 px-2 py-2.5 border rounded-xl text-sm text-center font-bold text-rose-600">
+            </div>
+          </div>
+        </div>
+
+        <!-- 📁 நேரடி JSON ஃபைல் அப்லோட் -->
+        <div class="p-4 bg-indigo-50/70 rounded-2xl border border-indigo-200 mb-3 space-y-1.5">
+          <label class="block text-xs font-bold text-indigo-950">
+            📁 கணினியிலிருந்து JSON கோப்பைத் தேர்ந்தெடுக்கவும் (Direct File Upload):
+          </label>
+          <input type="file" id="jsonFileInput" accept=".json" onchange="handleJsonFileSelect(event)"
+                 class="block w-full text-xs text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer bg-white border border-slate-200 rounded-xl">
+          <p class="text-[11px] text-slate-500">
+            *.json ஃபைலைத் தேர்ந்தெடுத்தால் வினாக்கள் தானாகவே கீழே உள்ள பெட்டியில் வந்துவிடும்.
+          </p>
+        </div>
+
+        <!-- வினாக்கள் பெட்டி -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">வினாக்கள் (JSON Format / Preview) *</label>
+          <textarea id="examQuestionsJson" rows="6" required placeholder='[{"q": "விசை சமன்பாடு என்ன?", "options": ["F=ma", "F=mv", "F=m/a", "F=0"], "ans": 0, "exp": "நியூட்டனின் இரண்டாம் விதி"}]'
+                    class="w-full px-3.5 py-2.5 border rounded-xl text-xs font-mono outline-none focus:border-indigo-600"></textarea>
+        </div>
+
+        <button type="submit" id="uploadBtn" 
+                class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow transition">
+          🚀 தேர்வை இணையத்தில் வெளியிடு (Publish Exam)
+        </button>
+      </form>
+    </section>
+
+    <!-- 2️⃣ அரசுப் பள்ளி & நீட் மாணவர் அனுமதி (Section / Batch & Medium) -->
+    <section class="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+      <div class="border-b border-slate-100 pb-3 flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <span>👥</span> மாணவர் தேர்வு அனுமதி (Student Admission Management)
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">அனுமதிக்கும் மாணவர் மட்டுமே அவருக்குரிய வகுப்பு, மீடியம் மற்றும் தேர்வு அறைக்குள் நுழைய முடியும்</p>
+        </div>
+        <span id="studentCountBadge" class="text-xs bg-emerald-50 text-emerald-700 font-bold px-3 py-1 rounded-full">0 மாணவர்கள்</span>
+      </div>
+
+      <!-- உள்ளீட்டுப் படிவம் -->
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 mb-1">மாணவர் பெயர் *</label>
+            <input type="text" id="newStudentName" placeholder="மாணவரின் முழுப் பெயர்" 
+                   class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs outline-none focus:border-indigo-600">
+          </div>
+
+          <div class="sm:col-span-1">
+            <label class="block text-xs font-bold text-slate-700 mb-1">10-இலக்க மொபைல் எண் *</label>
+            <input type="tel" id="newStudentPhone" maxlength="10" placeholder="9876543210" 
+                   class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold outline-none focus:border-indigo-600">
+          </div>
+          
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">பாடப்பிரிவு (Course) *</label>
+            <select id="newStudentTarget" onchange="updateStudentBatchOptions()" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold bg-white outline-none focus:border-indigo-600">
+              <option value="BOARD">State Board (அரசுப் பள்ளி)</option>
+              <option value="NEET">NEET</option>
+              <option value="JEE">JEE</option>
+              <option value="ALL">அனைத்துப் பிரிவு (All)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">வகுப்பு (Grade) *</label>
+            <select id="newStudentGrade" onchange="updateStudentBatchOptions()" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold bg-white outline-none focus:border-indigo-600">
+              <option value="12">12-ஆம் வகுப்பு (Class 12)</option>
+              <option value="11">11-ஆம் வகுப்பு (Class 11)</option>
+              <option value="0">அனைத்து வகுப்பு (All)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">பயிற்றுமொழி (Medium) *</label>
+            <select id="newStudentMedium" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-bold bg-white outline-none focus:border-indigo-600 text-indigo-900">
+              <option value="TAMIL">🇮🇳 தமிழ் வழி (Tamil)</option>
+              <option value="ENGLISH">🇬🇧 English Medium</option>
+              <option value="ALL">இரு மொழியும் (Both)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Section / Batch தேர்வு வரி -->
+        <div class="pt-2 border-t border-slate-200 flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-amber-900" id="batchSectionLabel">பிரிவு (Section / Batch) *:</span>
+            <select id="newStudentBatch" class="px-3.5 py-1.5 border border-amber-300 rounded-xl text-xs font-bold bg-amber-50 text-amber-950 outline-none focus:border-indigo-600 shadow-sm">
+              <!-- JS auto fills -->
+            </select>
+          </div>
+
+          <button type="button" onclick="addPaidStudent()" 
+                  class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2 rounded-xl text-xs shadow transition flex items-center gap-1.5">
+            <span>+</span> மாணவரை அனுமதி (Add Student)
+          </button>
+        </div>
+      </div>
+
+      <!-- மாணவர் தேடல் பெட்டி -->
+      <div class="flex items-center justify-between gap-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
+        <div class="relative w-full max-w-xs">
+          <input type="text" id="paidStudentSearchInput" oninput="filterPaidStudentsList()" placeholder="பெயர், மொபைல், பிரிவு தேடுக..." 
+                 class="w-full px-3.5 py-2 pl-9 bg-white border border-slate-300 rounded-xl text-xs outline-none focus:border-indigo-600">
+          <span class="absolute left-3 top-2.5 text-xs text-slate-400 pointer-events-none">🔍</span>
+        </div>
+        <span class="text-[11px] text-slate-500 font-semibold hidden sm:inline">வகுப்பு / Section / Batch / Medium வாரியாகத் தேடலாம்</span>
+      </div>
+
+      <!-- மாணவர்கள் பட்டியல் அட்டவணை -->
+      <div class="border rounded-2xl overflow-hidden max-h-72 overflow-y-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 text-slate-700 font-bold border-b sticky top-0 bg-slate-50 z-10">
+            <tr>
+              <th class="p-3">மாணவர் பெயர்</th>
+              <th class="p-3">மொபைல் எண்</th>
+              <th class="p-3">அனுமதிக்கப்பட்ட பிரிவு (Course & Section/Batch)</th>
+              <th class="p-3">பயிற்றுமொழி</th>
+              <th class="p-3">தேதி</th>
+              <th class="p-3 text-right">நடவடிக்கை</th>
+            </tr>
+          </thead>
+          <tbody id="paidStudentsTable" class="divide-y text-slate-700">
+            <tr><td colspan="6" class="p-4 text-center text-slate-400">ஏற்றப்படுகிறது...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3️⃣ பதிவேற்றப்பட்ட தேர்வுகள் மேலாண்மை -->
+    <section class="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+      <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <span>📚</span> பதிவேற்றப்பட்ட தேர்வுகள் (Published Exams)
+        </h2>
+        <span id="examsCountBadge" class="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
+      </div>
+
+      <!-- வடிகட்டி கட்டுப்பாடுகள் (Medium + Main + Sub-Folder) -->
+      <div class="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+        
+        <!-- பயிற்றுமொழி வடிகட்டி -->
+        <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200">
+          <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <span>🌐</span> பயிற்றுமொழி (Medium):
+          </span>
+          <div class="flex flex-wrap gap-1.5" id="mediumFilterButtons">
+            <button onclick="setAdminMediumFilter('ALL')" id="medFilterBtn_ALL" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 shadow-sm transition">
+              அனைத்து மொழிகள் (All)
+            </button>
+            <button onclick="setAdminMediumFilter('TAMIL')" id="medFilterBtn_TAMIL" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition">
+              🇮🇳 தமிழ் வழி மட்டும்
+            </button>
+            <button onclick="setAdminMediumFilter('ENGLISH')" id="medFilterBtn_ENGLISH" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition">
+              🇬🇧 English Medium Only
+            </button>
+          </div>
+        </div>
+
+        <!-- முதன்மைப் பிரிவு வடிகட்டி -->
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+            <span>🎯</span> முதன்மைப் பிரிவு:
+          </span>
+          <div class="flex flex-wrap gap-1.5" id="mainTypeFilterButtons">
+            <button onclick="setAdminMainFilter('ALL')" id="filterBtn_ALL" class="px-3 py-1 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition">
+              அனைத்தும் (All)
+            </button>
+            <button onclick="setAdminMainFilter('BOARD')" id="filterBtn_BOARD" class="px-3 py-1 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition">
+              State Board
+            </button>
+            <button onclick="setAdminMainFilter('NEET')" id="filterBtn_NEET" class="px-3 py-1 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition">
+              NEET
+            </button>
+            <button onclick="setAdminMainFilter('JEE')" id="filterBtn_JEE" class="px-3 py-1 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition">
+              JEE
+            </button>
+          </div>
+        </div>
+
+        <!-- சப்-ஃபோல்டர் வடிகட்டி -->
+        <div class="pt-2.5 border-t border-slate-200 flex items-center justify-between flex-wrap gap-2">
+          <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+            <span>📂</span> சப்-ஃபோல்டர்:
+          </span>
+          <div class="flex flex-wrap gap-1.5" id="subCategoryFilterButtons"></div>
+        </div>
+      </div>
+
+      <!-- தேர்வுகள் நேரடித் தேடல் பெட்டி -->
+      <div class="flex items-center justify-between gap-3 bg-white p-2.5 rounded-2xl border border-slate-200">
+        <div class="relative w-full max-w-xs">
+          <input type="text" id="adminExamSearchInput" oninput="filterAdminExamsList()" placeholder="தேர்வின் பெயர், Sub-folder அல்லது Unit தேடுக..." 
+                 class="w-full px-3.5 py-2 pl-9 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-indigo-600">
+          <span class="absolute left-3 top-2.5 text-xs text-slate-400 pointer-events-none">🔍</span>
+        </div>
+        <span class="text-[11px] text-slate-500 font-semibold hidden sm:inline">தலைப்பு / மீடியம் / சப்-ஃபோல்டர் வாரியாகத் தேடலாம்</span>
+      </div>
+
+      <div class="border rounded-2xl overflow-hidden overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 text-slate-600 font-bold border-b">
+            <tr>
+              <th class="p-3">தலைப்பு</th>
+              <th class="p-3">முதன்மைப் பிரிவு</th>
+              <th class="p-3">சப்-ஃபோல்டர்</th>
+              <th class="p-3">வகுப்பு</th>
+              <th class="p-3">பயிற்றுமொழி</th>
+              <th class="p-3">வினாக்கள்</th>
+              <th class="p-3 text-right">செயல்கள்</th>
+            </tr>
+          </thead>
+          <tbody id="examsTable" class="divide-y text-slate-700">
+            <tr><td colspan="7" class="p-4 text-center text-slate-400">ஏற்றப்படுகிறது...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4️⃣ மாணவர் தேர்வு முடிவுகள் -->
+    <section class="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+      <div class="border-b border-slate-100 pb-3 flex items-center justify-between flex-wrap gap-3">
+        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <span>📊</span> மாணவர் தேர்வு முடிவுகள் (Student Submissions)
+        </h2>
+        
+        <div class="flex items-center gap-2 flex-wrap">
+          <select id="resultExamFilter" onchange="filterAndRenderResults()" class="px-3 py-2 border rounded-xl text-xs font-semibold outline-none focus:border-indigo-600 bg-slate-50">
+            <option value="ALL">அனைத்துத் தேர்வுகளும் (All Exams)</option>
+          </select>
+          <button type="button" onclick="downloadSubmissionsCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-2 rounded-xl text-xs inline-flex items-center gap-1 shadow cursor-pointer">
+            📊 எக்செல் டவுன்லோட் (CSV)
+          </button>
+          
+          <button onclick="downloadFilteredResultsCSV()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow">
+            📥 இந்தத் தேர்வை மட்டும் டவுன்லோட் (Excel/CSV)
+          </button>
+        </div>
+      </div>
+
+      <div class="border rounded-2xl overflow-hidden overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 text-slate-600 font-bold border-b">
+            <tr>
+              <th class="p-3">மாணவர் பெயர் & எண்</th>
+              <th class="p-3">தேர்வுத் தலைப்பு</th>
+              <th class="p-3">மதிப்பெண்</th>
+              <th class="p-3">சதவீதம்</th>
+              <th class="p-3">சரி / தவறு</th>
+              <th class="p-3">எழுதிய தேதி</th>
+            </tr>
+          </thead>
+          <tbody id="resultsTable" class="divide-y text-slate-700">
+            <tr><td colspan="6" class="p-4 text-center text-slate-400">முடிவுகள் ஏற்றப்படுகின்றன...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ✏️ தேர்வு விவரங்களைத் திருத்தும் Modal (Edit Exam Modal) -->
+  <div id="editExamModal" style="display:none;" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
+      <div class="p-5 bg-indigo-950 text-white flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-base md:text-lg text-amber-300">✏️ தேர்வு விவரங்களைத் திருத்து</h3>
+          <p class="text-xs text-indigo-200 mt-0.5">தலைப்பு மற்றும் அமைப்புகளை உடனடியாக மாற்றலாம்</p>
+        </div>
+        <button onclick="closeEditExamModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center text-sm">
+          ✕
+        </button>
+      </div>
+
+      <form id="editExamForm" onsubmit="handleSaveExamEdit(event)" class="p-6 space-y-4 text-xs">
+        <input type="hidden" id="editExamId">
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">தேர்வின் தலைப்பு (Title) *</label>
+          <input type="text" id="editExamTitle" required class="w-full px-3.5 py-2.5 border rounded-xl text-xs outline-none focus:border-indigo-600">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">முதன்மைப் பிரிவு *</label>
+            <select id="editExamType" onchange="updateEditSubCategoryOptions()" class="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:border-indigo-600 bg-white">
+              <option value="BOARD">State Board</option>
+              <option value="NEET">NEET Pattern</option>
+              <option value="JEE">JEE Pattern</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">சப்-ஃபோல்டர் பிரிவு *</label>
+            <select id="editExamSubCategory" class="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:border-indigo-600 bg-amber-50 text-amber-950 font-bold">
+              <!-- JS auto fills -->
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">வகுப்பு (Grade) *</label>
+            <select id="editExamGrade" class="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:border-indigo-600 bg-white">
+              <option value="12">Class 12</option>
+              <option value="11">Class 11</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">பயிற்றுமொழி (Medium) *</label>
+            <select id="editExamMedium" class="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:border-indigo-600 bg-white">
+              <option value="TAMIL">🇮🇳 தமிழ் வழி</option>
+              <option value="ENGLISH">🇬🇧 English</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">கால அளவு (நிமிடம்)</label>
+            <input type="number" id="editExamDuration" min="5" class="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:border-indigo-600">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">+ சரி மதிப்பெண்</label>
+            <input type="number" id="editExamPos" step="0.5" class="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:border-indigo-600 text-center font-bold text-emerald-700">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">- தவறு மதிப்பெண்</label>
+            <input type="number" id="editExamNeg" step="0.25" class="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:border-indigo-600 text-center font-bold text-rose-600">
+          </div>
+        </div>
+
+        <div class="pt-3 border-t flex justify-end gap-2">
+          <button type="button" onclick="closeEditExamModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 font-bold rounded-xl text-slate-700">
+            ரத்து செய்
+          </button>
+          <button type="submit" id="saveEditBtn" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-white shadow">
+            💾 சேமி (Save Changes)
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- மாதிரிப் பார்வை Modal -->
+  <div id="previewModal" style="display:none;" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-3xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      <div class="p-5 bg-indigo-950 text-white flex justify-between items-center">
+        <div>
+          <h3 id="previewTitle" class="font-bold text-base md:text-lg text-amber-300">தேர்வு வினாக்கள் மாதிரி</h3>
+          <p id="previewSubtitle" class="text-xs text-indigo-200 mt-0.5">மாணவர் பார்வை வடிவம்</p>
+        </div>
+        <button onclick="closePreviewModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center text-sm">
+          ✕
+        </button>
+      </div>
+
+      <div id="previewQuestionsList" class="p-6 overflow-y-auto space-y-6 flex-grow bg-slate-50"></div>
+
+      <div class="p-4 bg-white border-t border-slate-200 text-right">
+        <button onclick="closePreviewModal()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-6 py-2 rounded-xl text-xs">
+          மூடுக (Close)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://agymotgpqfghoutettpv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFneW1vdGdwcWZnaG91dGV0dHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NjA5NzIsImV4cCI6MjEwOTUzNjk3Mn0.KeTw76EwZQimmoPkxzVTWfd0p6WxavLsnhrZCsWmYec';
+    
+    let supabaseClient = null;
+    let allLoadedExams = [];
+    let allPaidStudents = [];
+    let cachedResults = [];
+
+    let activeAdminMediumFilter = 'ALL';
+    let activeAdminMainFilter = 'ALL';
+    let activeAdminSubFilter = 'ALL';
+
+    const SUB_CATEGORY_LABELS = {
+      'BOOK_BACK': { label: '📖 Book Back', bg: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+      'CREATED': { label: '💡 Created', bg: 'bg-amber-50 text-amber-800 border-amber-200' },
+      'MODEL_PAPER': { label: '📝 Model Paper', bg: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
+      'COMBO': { label: '⚡ Combo', bg: 'bg-purple-50 text-purple-800 border-purple-200' },
+      'UNIT_TEST': { label: '🎯 Unit Test', bg: 'bg-rose-50 text-rose-800 border-rose-200' },
+      'NCERT_LINE': { label: '🔬 NCERT Line', bg: 'bg-teal-50 text-teal-800 border-teal-200' },
+      'PYQ': { label: '⏳ PYQ', bg: 'bg-amber-50 text-amber-900 border-amber-300' },
+      'COMBO_FULL': { label: '🏆 Full Mock', bg: 'bg-indigo-50 text-indigo-900 border-indigo-300' },
+      'CHAPTER_TEST': { label: '📐 Chapter Test', bg: 'bg-sky-50 text-sky-800 border-sky-200' },
+      'PYQ_JEE': { label: '⏳ JEE PYQ', bg: 'bg-orange-50 text-orange-800 border-orange-200' },
+      'MOCK_TEST': { label: '🚀 JEE Mock', bg: 'bg-indigo-50 text-indigo-900 border-indigo-300' },
+      'GENERAL': { label: '📁 General', bg: 'bg-slate-100 text-slate-700 border-slate-200' }
+    };
+
+    const SUB_CATEGORIES_DICT = {
+      BOARD: [
+        { val: 'BOOK_BACK', label: '📖 Book Back Direct (பாடநூல் வினாக்கள்)' },
+        { val: 'CREATED', label: '💡 Created / Internal (உள் வினாக்கள்)' },
+        { val: 'MODEL_PAPER', label: '📝 Model Question Papers (மாதிரி வினாத்தாள்கள்)' },
+        { val: 'COMBO', label: '⚡ Combo / Revision Tests (திருப்புதல் தேர்வுகள்)' }
+      ],
+      NEET: [
+        { val: 'UNIT_TEST', label: '🎯 Unit Wise Tests (அலகுத் தேர்வுகள்)' },
+        { val: 'NCERT_LINE', label: '🔬 NCERT Line-by-Line Questions' },
+        { val: 'PYQ', label: '⏳ Previous Year Questions (PYQ)' },
+        { val: 'COMBO_FULL', label: '🏆 Combo & Full Syllabus Mock' }
+      ],
+      JEE: [
+        { val: 'CHAPTER_TEST', label: '📐 Chapter Wise Tests' },
+        { val: 'PYQ_JEE', label: '⏳ JEE Main PYQ' },
+        { val: 'MOCK_TEST', label: '🚀 Full Length Mock Tests' }
+      ]
+    };
+
+    try {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) {
+      console.error(e);
+    }
+
+    function updateSubCategoryOptions() {
+      const type = document.getElementById('examType').value;
+      const subSelect = document.getElementById('examSubCategory');
+      if (!subSelect) return;
+      const options = SUB_CATEGORIES_DICT[type] || SUB_CATEGORIES_DICT.BOARD;
+      subSelect.innerHTML = options.map(opt => `<option value="${opt.val}">${opt.label}</option>`).join('');
+    }
+
+    function updateEditSubCategoryOptions(selectedVal = '') {
+      const type = document.getElementById('editExamType').value;
+      const subSelect = document.getElementById('editExamSubCategory');
+      if (!subSelect) return;
+      const options = SUB_CATEGORIES_DICT[type] || SUB_CATEGORIES_DICT.BOARD;
+      subSelect.innerHTML = options.map(opt => `<option value="${opt.val}">${opt.label}</option>`).join('');
+      if (selectedVal) subSelect.value = selectedVal;
+    }
+
+    function updateStudentBatchOptions() {
+      const target = document.getElementById('newStudentTarget')?.value || 'BOARD';
+      const grade = document.getElementById('newStudentGrade')?.value || '12';
+      const batchSelect = document.getElementById('newStudentBatch');
+      const label = document.getElementById('batchSectionLabel');
+      if (!batchSelect) return;
+
+      if (target === 'BOARD') {
+        if (label) label.innerText = `வகுப்பு ${grade} பிரிவு (Section) *:`;
+        batchSelect.innerHTML = `
+          <option value="${grade}-A">${grade}-A Section</option>
+          <option value="${grade}-B">${grade}-B Section</option>
+          <option value="${grade}-C">${grade}-C Section</option>
+          <option value="${grade}-D">${grade}-D Section</option>
+          <option value="${grade}-ALL">அனைத்துப் பிரிவுகளும் (${grade})</option>
+        `;
+      } else if (target === 'NEET' || target === 'JEE') {
+        if (label) label.innerText = `${target} தொகுதி (Batch) *:`;
+        batchSelect.innerHTML = `
+          <option value="Batch 1">Batch 1 (தீவிரப் பயிற்சி / Super 30)</option>
+          <option value="Batch 2">Batch 2 (வழக்கமான பயிற்சி / Regular)</option>
+          <option value="Batch 3">Batch 3 (Crash / Foundation)</option>
+          <option value="All Batches">All Batches (அனைத்து Batches)</option>
+        `;
+      } else {
+        if (label) label.innerText = `பொதுப் பிரிவு (Batch) *:`;
+        batchSelect.innerHTML = `<option value="General">All Students</option>`;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      updateSubCategoryOptions();
+      updateStudentBatchOptions();
+      updateAdminSubFilterButtons();
+      await loadExamsList();
+      await loadPaidStudents();
+      await loadSubmissionsList();
+    });
+
+    function handleJsonFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!file.name.endsWith('.json')) {
+        alert("தயவுசெய்து .json கோப்பை மட்டும் தேர்ந்தெடுக்கவும்!");
+        event.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const content = e.target.result;
+          const parsed = JSON.parse(content);
+          if (!Array.isArray(parsed)) throw new Error("JSON ஒரு Array [...] வடிவில் இருக்க வேண்டும்!");
+          
+          document.getElementById('examQuestionsJson').value = JSON.stringify(parsed, null, 2);
+          alert(`✅ "${file.name}" வெற்றிகரமாகப் பெறப்பட்டது! மொத்தம் ${parsed.length} வினாக்கள் உள்ளன.`);
+        } catch (err) {
+          alert("❌ JSON அமைப்பில் பிழை: " + err.message);
+          event.target.value = '';
+        }
+      };
+
+      reader.readAsText(file);
+    }
+
+    async function handleExamUpload(e) {
+      e.preventDefault();
+      const btn = document.getElementById('uploadBtn');
+      const titleInput = document.getElementById('examTitle').value.trim();
+      const type = document.getElementById('examType').value;
+      const subCategory = document.getElementById('examSubCategory')?.value || 'BOOK_BACK';
+      const grade = parseInt(document.getElementById('examGrade').value);
+      const medium = document.getElementById('examMedium').value;
+      const duration = parseInt(document.getElementById('examDuration').value) || 15;
+      const pos = parseFloat(document.getElementById('posMarks').value) || 1;
+      const neg = parseFloat(document.getElementById('negMarks').value) || 0;
+      const jsonRaw = document.getElementById('examQuestionsJson').value.trim();
+
+      let questionsArr = [];
+      try {
+        questionsArr = JSON.parse(jsonRaw);
+        if (!Array.isArray(questionsArr)) throw new Error("JSON ஒரு Array ஆக இருக்க வேண்டும்!");
+      } catch (err) {
+        return alert("வினாக்கள் JSON வடிவில் பிழை உள்ளது: " + err.message);
+      }
+
+      btn.disabled = true;
+      btn.innerText = "பதிவேற்றப்படுகிறது...";
+
+      const safeTitle = (titleInput || 'CLASS 12 - PHYSICS TEST').trim();
+
+      const { error } = await supabaseClient.from('exams').insert([{
+        title: safeTitle,
+        exam_title: safeTitle,
+        chapter_name: subCategory,
+        sub_category: subCategory,
+        exam_type: type || 'BOARD',
+        grade: grade || 12,
+        medium: medium || 'TAMIL',
+        duration_minutes: duration,
+        positive_marks: pos,
+        negative_marks: neg,
+        total_marks: questionsArr.length * pos,
+        questions: questionsArr,
+        is_published: true
+      }]);
+
+      btn.disabled = false;
+      btn.innerText = "🚀 தேர்வை இணையத்தில் வெளியிடு (Publish Exam)";
+
+      if (error) {
+        alert("பதிவேற்றுவதில் பிழை: " + error.message);
+      } else {
+        alert("தேர்வு வெற்றிகரமாக வெளியிடப்பட்டது!");
+        document.getElementById('uploadForm').reset();
+        updateSubCategoryOptions();
+        await loadExamsList();
+      }
+    }
+
+    async function loadExamsList() {
+      const tbody = document.getElementById('examsTable');
+      const { data, error } = await supabaseClient.from('exams').select('*').order('created_at', { ascending: false });
+
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">தேர்வுகள் எதுவும் இல்லை.</td></tr>';
+        document.getElementById('examsCountBadge').innerText = '0 தேர்வுகள்';
+        allLoadedExams = [];
+        return;
+      }
+
+      allLoadedExams = data;
+      filterAdminExamsList();
+    }
+
+    function setAdminMediumFilter(med) {
+      activeAdminMediumFilter = med;
+      ['ALL', 'TAMIL', 'ENGLISH'].forEach(m => {
+        const btn = document.getElementById(`medFilterBtn_${m}`);
+        if (!btn) return;
+        btn.className = (m === med)
+          ? "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 shadow-sm transition"
+          : "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition";
+      });
+      filterAdminExamsList();
+    }
+
+    function setAdminMainFilter(type) {
+      activeAdminMainFilter = type;
+      activeAdminSubFilter = 'ALL';
+      ['ALL', 'BOARD', 'NEET', 'JEE'].forEach(t => {
+        const btn = document.getElementById(`filterBtn_${t}`);
+        if (!btn) return;
+        btn.className = (t === type)
+          ? "px-3 py-1 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition"
+          : "px-3 py-1 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition";
+      });
+      updateAdminSubFilterButtons();
+      filterAdminExamsList();
+    }
+
+    function updateAdminSubFilterButtons() {
+      const container = document.getElementById('subCategoryFilterButtons');
+      if (!container) return;
+
+      const subListMap = {
+        BOARD: [
+          { key: 'BOOK_BACK', name: '📖 Book Back' },
+          { key: 'CREATED', name: '💡 Created' },
+          { key: 'MODEL_PAPER', name: '📝 Model Paper' },
+          { key: 'COMBO', name: '⚡ Combo' }
+        ],
+        NEET: [
+          { key: 'UNIT_TEST', name: '🎯 Unit Test' },
+          { key: 'NCERT_LINE', name: '🔬 NCERT Line' },
+          { key: 'PYQ', name: '⏳ PYQ' },
+          { key: 'COMBO_FULL', name: '🏆 Full Mock' }
+        ],
+        JEE: [
+          { key: 'CHAPTER_TEST', name: '📐 Chapter Test' },
+          { key: 'PYQ_JEE', name: '⏳ JEE PYQ' },
+          { key: 'MOCK_TEST', name: '🚀 Full Mock' }
+        ]
+      };
+
+      let list = [];
+      if (activeAdminMainFilter === 'ALL') {
+        list = [
+          { key: 'BOOK_BACK', name: '📖 Book Back' },
+          { key: 'CREATED', name: '💡 Created' },
+          { key: 'UNIT_TEST', name: '🎯 Unit Test' },
+          { key: 'PYQ', name: '⏳ PYQ' },
+          { key: 'MODEL_PAPER', name: '📝 Model Paper' }
+        ];
+      } else {
+        list = subListMap[activeAdminMainFilter] || [];
+      }
+
+      let btnsHtml = `
+        <button onclick="setAdminSubFilter('ALL')" class="px-2.5 py-1 rounded-xl text-[11px] font-bold ${activeAdminSubFilter === 'ALL' ? 'bg-amber-600 text-white' : 'bg-white hover:bg-slate-200 text-slate-700 border'} transition">
+          அனைத்தும் (All)
+        </button>
+      `;
+
+      list.forEach(item => {
+        const isActive = (activeAdminSubFilter === item.key);
+        btnsHtml += `
+          <button onclick="setAdminSubFilter('${item.key}')" class="px-2.5 py-1 rounded-xl text-[11px] font-bold ${isActive ? 'bg-amber-600 text-white shadow-sm' : 'bg-white hover:bg-slate-200 text-slate-700 border'} transition">
+            ${item.name}
+          </button>
+        `;
+      });
+
+      container.innerHTML = btnsHtml;
+    }
+
+    function setAdminSubFilter(subKey) {
+      activeAdminSubFilter = subKey;
+      updateAdminSubFilterButtons();
+      filterAdminExamsList();
+    }
+
+    function filterAdminExamsList() {
+      const query = (document.getElementById('adminExamSearchInput')?.value || '').toLowerCase().trim();
+
+      const filtered = allLoadedExams.filter(exam => {
+        const title = (exam.exam_title || exam.title || '').toLowerCase();
+        const type = (exam.exam_type || 'BOARD').toUpperCase();
+        let sub = (exam.sub_category || exam.chapter_name || 'GENERAL').toUpperCase();
+        const grade = String(exam.grade || '');
+        const medium = (exam.medium || 'TAMIL').toUpperCase();
+
+        if (title.includes('book back') || title.includes('பாடநூல்')) sub = 'BOOK_BACK';
+        else if (title.includes('created') || title.includes('உள் வினா')) sub = 'CREATED';
+
+        const matchMedium = (activeAdminMediumFilter === 'ALL') || (medium === activeAdminMediumFilter);
+        let matchMain = (activeAdminMainFilter === 'ALL') || (type === activeAdminMainFilter);
+        if (!matchMain && title.includes(activeAdminMainFilter.toLowerCase())) matchMain = true;
+
+        let matchSub = (activeAdminSubFilter === 'ALL') || (sub === activeAdminSubFilter);
+        if (!matchSub && title.includes(activeAdminSubFilter.toLowerCase())) matchSub = true;
+
+        const matchQuery = !query || title.includes(query) || type.toLowerCase().includes(query) || sub.toLowerCase().includes(query) || grade.includes(query) || medium.toLowerCase().includes(query);
+
+        return matchMedium && matchMain && matchSub && matchQuery;
+      });
+
+      renderAdminExamsTable(filtered);
+    }
+
+    function renderAdminExamsTable(list) {
+      const tbody = document.getElementById('examsTable');
+      if (!tbody) return;
+
+      document.getElementById('examsCountBadge').innerText = `${list.length} தேர்வுகள்`;
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400 font-semibold">தேடலுக்குப் பொருத்தமான தேர்வுகள் எதுவும் இல்லை.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(exam => {
+        let qCount = 0;
+        try {
+          qCount = (typeof exam.questions === 'string') ? JSON.parse(exam.questions).length : (exam.questions?.length || 0);
+        } catch(e) {}
+
+        const dTitle = exam.exam_title || exam.title || 'தலைப்பற்ற தேர்வு';
+        let rawSub = (exam.sub_category || exam.chapter_name || 'GENERAL').toUpperCase();
+        if (dTitle.toLowerCase().includes('book back')) rawSub = 'BOOK_BACK';
+
+        const subInfo = SUB_CATEGORY_LABELS[rawSub] || { label: `📁 ${rawSub}`, bg: 'bg-slate-100 text-slate-700 border-slate-200' };
+        const isEnglish = (exam.medium === 'ENGLISH');
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 font-semibold text-slate-900">${dTitle}</td>
+            <td class="p-3">
+              <span class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
+                ${exam.exam_type || 'BOARD'}
+              </span>
+            </td>
+            <td class="p-3">
+              <span class="px-2.5 py-1 rounded-lg font-bold border text-[11px] ${subInfo.bg}">
+                ${subInfo.label}
+              </span>
+            </td>
+            <td class="p-3 font-bold text-slate-700">Class ${exam.grade || 12}</td>
+            <td class="p-3">
+              ${isEnglish 
+                ? '<span class="px-2.5 py-1 rounded-lg font-bold border text-[11px] bg-blue-50 text-blue-800 border-blue-200">🇬🇧 English</span>' 
+                : '<span class="px-2.5 py-1 rounded-lg font-bold border text-[11px] bg-amber-50 text-amber-900 border-amber-200">🇮🇳 தமிழ் வழி</span>'}
+            </td>
+            <td class="p-3 font-semibold text-slate-600">${qCount} வினாக்கள்</td>
+            <td class="p-3 text-right space-x-1.5 whitespace-nowrap">
+              <button onclick="openEditExamModal('${exam.id}')" class="text-amber-800 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-lg font-bold text-xs transition border border-amber-200">
+                ✏️ திருத்து
+              </button>
+              <button onclick="previewExamQuestions('${exam.id}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg font-bold text-xs transition">
+                👁️ பார்
+              </button>
+              <button onclick="backupExamQuestionsJson('${exam.id}')" class="text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg font-bold text-xs transition">
+                💾 பேக்கப்
+              </button>
+              <button onclick="deleteExam('${exam.id}')" class="text-rose-600 hover:underline font-bold text-xs px-1">
+                நீக்கு
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ✏️ தேர்வு திருத்தும் செயல்பாடு (Edit Exam Logic)
+    function openEditExamModal(examId) {
+      const exam = allLoadedExams.find(e => e.id === examId);
+      if (!exam) return alert("தேர்வு விவரங்கள் கிடைக்கவில்லை!");
+
+      document.getElementById('editExamId').value = exam.id;
+      document.getElementById('editExamTitle').value = exam.exam_title || exam.title || '';
+      document.getElementById('editExamType').value = (exam.exam_type || 'BOARD').toUpperCase();
+      
+      const currentSub = (exam.sub_category || exam.chapter_name || 'BOOK_BACK').toUpperCase();
+      updateEditSubCategoryOptions(currentSub);
+
+      document.getElementById('editExamGrade').value = String(exam.grade || 12);
+      document.getElementById('editExamMedium').value = (exam.medium || 'TAMIL').toUpperCase();
+      document.getElementById('editExamDuration').value = exam.duration_minutes || 15;
+      document.getElementById('editExamPos').value = (exam.positive_marks != null) ? exam.positive_marks : 1;
+      document.getElementById('editExamNeg').value = (exam.negative_marks != null) ? exam.negative_marks : 0;
+
+      document.getElementById('editExamModal').style.display = 'flex';
+    }
+
+    function closeEditExamModal() {
+      document.getElementById('editExamModal').style.display = 'none';
+    }
+
+    async function handleSaveExamEdit(e) {
+      e.preventDefault();
+      const saveBtn = document.getElementById('saveEditBtn');
+      const examId = document.getElementById('editExamId').value;
+      const newTitle = document.getElementById('editExamTitle').value.trim();
+      const newType = document.getElementById('editExamType').value;
+      const newSub = document.getElementById('editExamSubCategory').value;
+      const newGrade = parseInt(document.getElementById('editExamGrade').value);
+      const newMedium = document.getElementById('editExamMedium').value;
+      const newDuration = parseInt(document.getElementById('editExamDuration').value) || 15;
+      const newPos = parseFloat(document.getElementById('editExamPos').value) || 1;
+      const newNeg = parseFloat(document.getElementById('editExamNeg').value) || 0;
+
+      if (!newTitle) return alert("தேர்வின் தலைப்பை உள்ளிடவும்!");
+
+      saveBtn.disabled = true;
+      saveBtn.innerText = "சேமிக்கப்படுகிறது...";
+
+      const { error } = await supabaseClient
+        .from('exams')
+        .update({
+          title: newTitle,
+          exam_title: newTitle,
+          exam_type: newType,
+          sub_category: newSub,
+          chapter_name: newSub,
+          grade: newGrade,
+          medium: newMedium,
+          duration_minutes: newDuration,
+          positive_marks: newPos,
+          negative_marks: newNeg
+        })
+        .eq('id', examId);
+
+      saveBtn.disabled = false;
+      saveBtn.innerText = "💾 சேமி (Save Changes)";
+
+      if (error) {
+        alert("திருத்துவதில் பிழை: " + error.message);
+      } else {
+        alert("✅ தேர்வு விவரங்கள் வெற்றிகரமாக மாற்றப்பட்டன!");
+        closeEditExamModal();
+        await loadExamsList();
+      }
+    }
+
+    // 3. கட்டணம் செலுத்திய மாணவர் மேலாண்மை
+    async function addPaidStudent() {
+      const name = document.getElementById('newStudentName').value.trim();
+      const phone = document.getElementById('newStudentPhone').value.trim();
+      const target = document.getElementById('newStudentTarget').value;
+      const grade = parseInt(document.getElementById('newStudentGrade').value);
+      const medium = document.getElementById('newStudentMedium').value;
+      const sectionBatch = document.getElementById('newStudentBatch')?.value || 'General';
+
+      if (!name || phone.length !== 10 || isNaN(phone)) {
+        return alert("சரியான மாணவர் பெயர் மற்றும் 10 இலக்க மொபைல் எண்ணை உள்ளிடவும்!");
+      }
+
+      const formattedTarget = `${target} [${sectionBatch}]`;
+
+      const { error } = await supabaseClient.from('paid_students').insert([{
+        student_name: name,
+        phone_number: phone,
+        target_exam: formattedTarget,
+        grade: grade,
+        medium: medium
+      }]);
+
+      if (error) {
+        alert("சேர்ப்பதில் பிழை: " + error.message);
+      } else {
+        alert(`✅ "${name}" வெற்றிகரமாக அனுமதிக்கப்பட்டார்!\nபிரிவு: ${formattedTarget} | ${medium === 'TAMIL' ? 'தமிழ் வழி' : 'English Medium'}`);
+        document.getElementById('newStudentName').value = '';
+        document.getElementById('newStudentPhone').value = '';
+        await loadPaidStudents();
+      }
+    }
+
+    async function loadPaidStudents() {
+      const tbody = document.getElementById('paidStudentsTable');
+      const { data, error } = await supabaseClient.from('paid_students').select('*').order('created_at', { ascending: false });
+
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-semibold">அனுமதிக்கப்பட்ட மாணவர்கள் யாரும் இல்லை.</td></tr>';
+        document.getElementById('studentCountBadge').innerText = '0 மாணவர்கள்';
+        allPaidStudents = [];
+        return;
+      }
+
+      allPaidStudents = data;
+      renderPaidStudentsTable(allPaidStudents);
+    }
+
+    function filterPaidStudentsList() {
+      const query = (document.getElementById('paidStudentSearchInput')?.value || '').toLowerCase().trim();
+      if (!query) {
+        renderPaidStudentsTable(allPaidStudents);
+        return;
+      }
+
+      const filtered = allPaidStudents.filter(s => {
+        const name = (s.student_name || '').toLowerCase();
+        const phone = (s.phone_number || '').toLowerCase();
+        const target = (s.target_exam || '').toLowerCase();
+        const grade = String(s.grade || '');
+        const medium = (s.medium || '').toLowerCase();
+        return name.includes(query) || phone.includes(query) || target.includes(query) || grade.includes(query) || medium.includes(query);
+      });
+
+      renderPaidStudentsTable(filtered);
+    }
+
+    function renderPaidStudentsTable(list) {
+      const tbody = document.getElementById('paidStudentsTable');
+      if (!tbody) return;
+
+      document.getElementById('studentCountBadge').innerText = `${list.length} மாணவர்கள்`;
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-semibold">தேடலுக்குப் பொருத்தமான மாணவர்கள் இல்லை.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(s => {
+        const cTarget = s.target_exam || 'ALL';
+        const cGrade = (s.grade && s.grade !== 0) ? `Class ${s.grade}` : 'All Classes';
+        const isEnglish = (s.medium === 'ENGLISH');
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 font-bold text-slate-900">${s.student_name}</td>
+            <td class="p-3 font-mono font-bold text-indigo-950">${s.phone_number}</td>
+            <td class="p-3">
+              <span class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-800 font-bold border border-indigo-200">
+                ${cTarget}
+              </span>
+              <span class="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 font-semibold ml-1">
+                ${cGrade}
+              </span>
+            </td>
+            <td class="p-3">
+              ${isEnglish 
+                ? '<span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold">🇬🇧 English</span>' 
+                : '<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-bold">🇮🇳 தமிழ் வழி</span>'}
+            </td>
+            <td class="p-3 text-slate-500">${new Date(s.created_at).toLocaleDateString('ta-IN')}</td>
+            <td class="p-3 text-right">
+              <button onclick="removePaidStudent('${s.id}', '${s.student_name}')" class="text-rose-600 hover:underline font-bold text-xs">
+                நீக்கு
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function removePaidStudent(id, name) {
+      if (confirm(`"${name}" அவர்களின் தேர்வு அனுமதியை ரத்து செய்யவா?`)) {
+        await supabaseClient.from('paid_students').delete().eq('id', id);
+        await loadPaidStudents();
+      }
+    }
+
+    // 4. மாதிரி வினாக்கள் & பேக்கப் & தேர்வுகள் நீக்கம்
+    function previewExamQuestions(examId) {
+      const exam = allLoadedExams.find(e => e.id === examId);
+      if (!exam) return;
+
+      let qList = [];
+      try {
+        if (typeof exam.questions === 'string') qList = JSON.parse(exam.questions);
+        else if (Array.isArray(exam.questions)) qList = exam.questions;
+        else if (exam.questions?.questions) qList = exam.questions.questions;
+      } catch(e) {}
+
+      const isEnglish = (exam.medium === 'ENGLISH');
+      document.getElementById('previewTitle').innerText = exam.exam_title || exam.title;
+      document.getElementById('previewSubtitle').innerText = `${exam.exam_type || 'EXAM'} | Class ${exam.grade || 12} | ${exam.medium || 'TAMIL'} | ${qList.length} வினாக்கள்`;
+
+      const container = document.getElementById('previewQuestionsList');
+      const optionLetters = ['A', 'B', 'C', 'D'];
+
+      if (qList.length === 0) {
+        container.innerHTML = '<div class="p-6 text-center text-slate-400">வினாக்கள் எதுவும் இல்லை!</div>';
+        document.getElementById('previewModal').style.display = 'flex';
+        return;
+      }
+
+      container.innerHTML = qList.map((q, idx) => {
+        const qText = isEnglish 
+          ? (q.question_en || q.question || q.q || q.question_ta || "வினா விவரம் இல்லை")
+          : (q.question_ta || q.question || q.q || q.question_en || "வினா விவரம் இல்லை");
+
+        let rawOptions = isEnglish
+          ? (q.options_en || q.options || q.choices || q.options_ta)
+          : (q.options_ta || q.options || q.choices || q.options_en);
+
+        let options = [];
+        if (Array.isArray(rawOptions)) options = rawOptions;
+        else if (rawOptions && typeof rawOptions === 'object') options = Object.values(rawOptions);
+
+        let correct = (q.correct_answer !== undefined) ? q.correct_answer : 
+                     ((q.ans !== undefined) ? q.ans : 
+                     ((q.correct !== undefined) ? q.correct : q.correct_option));
+        
+        if (typeof correct === 'string') {
+          const map = { 'A':0, 'B':1, 'C':2, 'D':3, 'a':0, 'b':1, 'c':2, 'd':3 };
+          correct = map[correct.trim()] !== undefined ? map[correct.trim()] : parseInt(correct);
+        }
+
+        const img = q.image_base64 || q.image || q.img || null;
+        let imageHtml = img ? `<div class="my-2 text-center bg-white p-2 rounded-xl border border-slate-300 inline-block shadow-sm"><img src="${img}" class="max-h-48 mx-auto object-contain rounded-lg"></div>` : '';
+        const exp = (isEnglish ? (q.explanation_en || q.exp_en) : (q.explanation_ta || q.exp_ta)) || q.exp || q.explanation || '';
+
+        const optionsHtml = options.map((opt, optIdx) => {
+          const isCorrect = (parseInt(correct) === optIdx);
+          return `
+            <div class="p-2.5 rounded-xl border ${isCorrect ? 'border-emerald-500 bg-emerald-50 font-bold text-emerald-950' : 'border-slate-200 bg-white text-slate-700'} flex items-start gap-2 text-xs md:text-sm">
+              <span>${optionLetters[optIdx]})</span>
+              <span>${opt}</span>
+              ${isCorrect ? '<span class="ml-auto text-xs text-emerald-700 font-bold shrink-0">✓ Key</span>' : ''}
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-2.5 shadow-sm">
+            <div class="flex items-start gap-2">
+              <span class="bg-indigo-100 text-indigo-900 font-bold text-xs px-2 py-1 rounded-lg">Q${idx + 1}</span>
+              <div class="font-semibold text-slate-900 text-sm leading-relaxed">${qText}</div>
+            </div>
+            ${imageHtml}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">${optionsHtml}</div>
+            ${exp ? `<div class="mt-2 p-2.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-950 leading-relaxed"><strong>💡 விளக்கம்:</strong> ${exp}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('previewModal').style.display = 'flex';
+
+      setTimeout(() => {
+        if (window.renderMathInElement) {
+          renderMathInElement(container, {
+            delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
+            throwOnError: false
+          });
+        }
+      }, 50);
+    }
+
+    function closePreviewModal() {
+      document.getElementById('previewModal').style.display = 'none';
+    }
+
+    async function deleteExam(id) {
+      if (confirm("இந்தத் தேர்வை முற்றிலும் நீக்கவா?")) {
+        await supabaseClient.from('exams').delete().eq('id', id);
+        await loadExamsList();
+      }
+    }
+
+    function backupExamQuestionsJson(examId) {
+      const exam = allLoadedExams.find(e => e.id === examId);
+      if (!exam) return alert("தேர்வு விவரங்கள் கிடைக்கவில்லை!");
+
+      let qList = [];
+      try {
+        if (typeof exam.questions === 'string') qList = JSON.parse(exam.questions);
+        else if (Array.isArray(exam.questions)) qList = exam.questions;
+        else if (exam.questions?.questions) qList = exam.questions.questions;
+      } catch(e) { return alert("பிழை: " + e.message); }
+
+      const fileData = JSON.stringify(qList, null, 2);
+      const blob = new Blob([fileData], { type: 'application/json;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const titleName = (exam.exam_title || exam.title || 'EXAM_BACKUP').replace(/[^a-zA-Z0-9_\u0B80-\u0BFF-]/g, '_');
+      a.href = url;
+      a.download = `${titleName}_BACKUP.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // 5. தேர்வு முடிவுகள் மேலாண்மை
+    async function loadSubmissionsList() {
+      const { data } = await supabaseClient.from('exam_submissions').select('*').order('submitted_at', { ascending: false });
+      cachedResults = data || [];
+      populateExamFilterDropdown();
+      filterAndRenderResults();
+    }
+
+    function populateExamFilterDropdown() {
+      const select = document.getElementById('resultExamFilter');
+      if (!select) return;
+
+      const uniqueExams = {};
+      cachedResults.forEach(r => {
+        if (r.exam_id) {
+          const match = allLoadedExams.find(e => e.id === r.exam_id);
+          uniqueExams[r.exam_id] = match ? (match.exam_title || match.title) : 'தேர்வு (' + r.exam_id.slice(0,6) + ')';
+        }
+      });
+
+      select.innerHTML = '<option value="ALL">அனைத்துத் தேர்வுகளும் (All Exams)</option>';
+      for (const [id, title] of Object.entries(uniqueExams)) {
+        select.innerHTML += `<option value="${id}">${title}</option>`;
+      }
+    }
+
+    function filterAndRenderResults() {
+      const selectedExamId = document.getElementById('resultExamFilter').value;
+      const tbody = document.getElementById('resultsTable');
+
+      let list = cachedResults;
+      if (selectedExamId !== 'ALL') list = cachedResults.filter(r => r.exam_id === selectedExamId);
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">முடிவுகள் எதுவும் இல்லை.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(sub => {
+        const match = allLoadedExams.find(e => e.id === sub.exam_id);
+        const examName = match ? (match.exam_title || match.title) : 'தேர்வு';
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 font-bold text-slate-900">${sub.student_name}</td>
+            <td class="p-3 text-slate-700 font-medium">${examName}</td>
+            <td class="p-3 font-bold text-indigo-700">${sub.total_marks_obtained} / ${sub.maximum_marks}</td>
+            <td class="p-3 font-bold ${sub.percentage >= 50 ? 'text-emerald-600' : 'text-amber-600'}">${sub.percentage}%</td>
+            <td class="p-3 text-slate-600">${sub.correct_count} சரி | ${sub.wrong_count} தவறு</td>
+            <td class="p-3 text-slate-500">${new Date(sub.submitted_at).toLocaleString('ta-IN')}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function downloadSubmissionsCSV() {
+      if (!cachedResults || cachedResults.length === 0) return alert('டவுன்லோட் செய்ய முடிவுகள் இல்லை!');
+
+      let csvContent = '\uFEFF';
+      csvContent += 'வ.எண்,தேதி & நேரம்,மாணவர் பெயர்,பதிவு எண்,மொபைல் எண்,மொத்த வினாக்கள்,சரியானவை,தவறானவை,எழுதாதவை,பெற்ற மதிப்பெண்,அதிகபட்ச மதிப்பெண்,சதவீதம் (%)\n';
+
+      cachedResults.forEach((row, index) => {
+        const date = row.submitted_at ? new Date(row.submitted_at).toLocaleString('ta-IN') : '-';
+        const name = `"${(row.student_name || '').replace(/"/g, '""')}"`;
+        const roll = `"${(row.roll_number || '').replace(/"/g, '""')}"`;
+        csvContent += `${index + 1},${date},${name},${roll},${row.phone_number || '-'},${row.total_questions || 0},${row.correct_count || 0},${row.wrong_count || 0},${row.unattended_count || 0},${row.total_marks_obtained || 0},${row.maximum_marks || 0},${row.percentage || 0}%\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `KALAMNESAN_ALL_RESULTS_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function downloadFilteredResultsCSV() {
+      const selectedExamId = document.getElementById('resultExamFilter').value;
+      const select = document.getElementById('resultExamFilter');
+      const selectedExamName = select.options[select.selectedIndex].text;
+
+      let list = (selectedExamId !== 'ALL') ? cachedResults.filter(r => r.exam_id === selectedExamId) : cachedResults;
+      if (list.length === 0) return alert("டவுன்லோட் செய்ய முடிவுகள் எதுவும் இல்லை!");
+
+      let csv = "Student Name,Marks Obtained,Total Marks,Percentage,Correct,Wrong,Submitted Date\n";
+      list.forEach(r => {
+        csv += `"${r.student_name}","${r.total_marks_obtained}","${r.maximum_marks}","${r.percentage}%","${r.correct_count}","${r.wrong_count}","${new Date(r.submitted_at).toLocaleString()}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const cleanTitle = selectedExamName.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
+      a.download = `Results_${cleanTitle}_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+  </script>
+</body>
+</html>
