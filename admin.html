@@ -94,7 +94,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">தேர்வின் தலைப்பு *</label>
-              <input type="text" id="examTitle" required placeholder="எ.கா: Class 12 - நிலை மின்னியல் அலகுத் தேர்வு" 
+              <input type="text" id="examTitle" required placeholder="எ.கா: Class 10 - ஒளியியல் அலகுத் தேர்வு / Bridge Course" 
                      class="w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none focus:border-indigo-600">
             </div>
 
@@ -102,8 +102,8 @@
               <label class="block text-xs font-semibold text-slate-600 mb-1">முதன்மைப் பிரிவு (Main Exam Type) *</label>
               <select id="examType" onchange="updateSubCategoryOptions()" class="w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none focus:border-indigo-600 bg-white font-semibold text-indigo-950">
                 <option value="BOARD">State Board (மாநிலப் பாடத்திட்டம்)</option>
-                <option value="NEET">NEET Pattern</option>
-                <option value="JEE">JEE Pattern</option>
+                <option value="NEET">NEET Pattern / Bridge Course</option>
+                <option value="JEE">JEE Pattern / Bridge Course</option>
               </select>
             </div>
 
@@ -118,9 +118,10 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">வகுப்பு (Grade) *</label>
-              <select id="examGrade" class="w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none focus:border-indigo-600 bg-white">
+              <select id="examGrade" class="w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none focus:border-indigo-600 bg-white font-bold text-indigo-900">
                 <option value="12">Class 12 (12-ஆம் வகுப்பு)</option>
                 <option value="11">Class 11 (11-ஆம் வகுப்பு)</option>
+                <option value="10">Class 10 (10-ஆம் வகுப்பு)</option>
               </select>
             </div>
 
@@ -203,8 +204,8 @@
               <label class="block text-xs font-bold text-slate-700 mb-1">பாடப்பிரிவு (Course) *</label>
               <select id="newStudentTarget" onchange="updateStudentBatchOptions()" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold bg-white outline-none focus:border-indigo-600">
                 <option value="BOARD">State Board (அரசுப் பள்ளி)</option>
-                <option value="NEET">NEET</option>
-                <option value="JEE">JEE</option>
+                <option value="NEET">NEET / Bridge Course</option>
+                <option value="JEE">JEE / Bridge Course</option>
                 <option value="ALL">அனைத்துப் பிரிவு (All)</option>
               </select>
             </div>
@@ -214,6 +215,7 @@
               <select id="newStudentGrade" onchange="updateStudentBatchOptions()" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold bg-white outline-none focus:border-indigo-600">
                 <option value="12">12-ஆம் வகுப்பு (Class 12)</option>
                 <option value="11">11-ஆம் வகுப்பு (Class 11)</option>
+                <option value="10">10-ஆம் வகுப்பு (Class 10)</option>
                 <option value="0">அனைத்து வகுப்பு (All)</option>
               </select>
             </div>
@@ -280,13 +282,37 @@
           <span id="examsCountBadge" class="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
         </div>
 
+        <!-- வடிகட்டி கட்டுப்பாடுகள் (Grade + Medium + Main + Sub-Folder) -->
         <div class="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+          
+          <!-- 🎓 வகுப்பு வடிகட்டி (Grade Filter) -->
+          <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200">
+            <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <span>🎓</span> வகுப்பு (Class / Grade):
+            </span>
+            <div class="flex flex-wrap gap-1.5" id="gradeFilterButtons">
+              <button onclick="setAdminGradeFilter('ALL')" id="gradeFilterBtn_ALL" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 shadow-sm transition">
+                அனைத்து வகுப்புகள் (All)
+              </button>
+              <button onclick="setAdminGradeFilter('12')" id="gradeFilterBtn_12" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition">
+                12-ஆம் வகுப்பு
+              </button>
+              <button onclick="setAdminGradeFilter('11')" id="gradeFilterBtn_11" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition">
+                11-ஆம் வகுப்பு
+              </button>
+              <button onclick="setAdminGradeFilter('10')" id="gradeFilterBtn_10" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition">
+                10-ஆம் வகுப்பு
+              </button>
+            </div>
+          </div>
+
+          <!-- பயிற்றுமொழி வடிகட்டி -->
           <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200">
             <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <span>🌐</span> பயிற்றுமொழி (Medium):
             </span>
             <div class="flex flex-wrap gap-1.5" id="mediumFilterButtons">
-              <button onclick="setAdminMediumFilter('ALL')" id="medFilterBtn_ALL" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 shadow-sm transition">
+              <button onclick="setAdminMediumFilter('ALL')" id="medFilterBtn_ALL" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition">
                 அனைத்து மொழிகள் (All)
               </button>
               <button onclick="setAdminMediumFilter('TAMIL')" id="medFilterBtn_TAMIL" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition">
@@ -298,6 +324,7 @@
             </div>
           </div>
 
+          <!-- முதன்மைப் பிரிவு வடிகட்டி -->
           <div class="flex items-center justify-between flex-wrap gap-2">
             <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
               <span>🎯</span> முதன்மைப் பிரிவு:
@@ -310,14 +337,15 @@
                 State Board
               </button>
               <button onclick="setAdminMainFilter('NEET')" id="filterBtn_NEET" class="px-3 py-1 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition">
-                NEET
+                NEET / Bridge
               </button>
               <button onclick="setAdminMainFilter('JEE')" id="filterBtn_JEE" class="px-3 py-1 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition">
-                JEE
+                JEE / Bridge
               </button>
             </div>
           </div>
 
+          <!-- சப்-ஃபோல்டர் வடிகட்டி -->
           <div class="pt-2.5 border-t border-slate-200 flex items-center justify-between flex-wrap gap-2">
             <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
               <span>📂</span> சப்-ஃபோல்டர்:
@@ -441,6 +469,7 @@
               <select id="editExamGrade" class="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:border-indigo-600 bg-white">
                 <option value="12">Class 12</option>
                 <option value="11">Class 11</option>
+                <option value="10">Class 10</option>
               </select>
             </div>
 
@@ -506,7 +535,6 @@
   </div> <!-- End of adminProtectedContent -->
 
   <script>
-    // 🔐 MASTER PASSWORD FOR TEACHER
     const ADMIN_SECRET_KEY = "RAMESH@123";
 
     function checkAdminSession() {
@@ -553,6 +581,7 @@
     let allPaidStudents = [];
     let cachedResults = [];
 
+    let activeAdminGradeFilter = 'ALL';
     let activeAdminMediumFilter = 'ALL';
     let activeAdminMainFilter = 'ALL';
     let activeAdminSubFilter = 'ALL';
@@ -580,13 +609,13 @@
         { val: 'COMBO', label: '⚡ Combo / Revision Tests (திருப்புதல் தேர்வுகள்)' }
       ],
       NEET: [
-        { val: 'UNIT_TEST', label: '🎯 Unit Wise Tests (அலகுத் தேர்வுகள்)' },
-        { val: 'NCERT_LINE', label: '🔬 NCERT Line-by-Line Questions' },
+        { val: 'UNIT_TEST', label: '🎯 Unit Wise Tests / Bridge Course' },
+        { val: 'NCERT_LINE', label: '🔬 NCERT Line-by-Line / Foundation' },
         { val: 'PYQ', label: '⏳ Previous Year Questions (PYQ)' },
         { val: 'COMBO_FULL', label: '🏆 Combo & Full Syllabus Mock' }
       ],
       JEE: [
-        { val: 'CHAPTER_TEST', label: '📐 Chapter Wise Tests' },
+        { val: 'CHAPTER_TEST', label: '📐 Chapter Tests / Bridge Course' },
         { val: 'PYQ_JEE', label: '⏳ JEE Main PYQ' },
         { val: 'MOCK_TEST', label: '🚀 Full Length Mock Tests' }
       ]
@@ -634,9 +663,8 @@
       } else if (target === 'NEET' || target === 'JEE') {
         if (label) label.innerText = `${target} தொகுதி (Batch) *:`;
         batchSelect.innerHTML = `
-          <option value="Batch 1">Batch 1 (தீவிரப் பயிற்சி / Super 30)</option>
-          <option value="Batch 2">Batch 2 (வழக்கமான பயிற்சி / Regular)</option>
-          <option value="Batch 3">Batch 3 (Crash / Foundation)</option>
+          <option value="Batch 1">Batch 1 (Foundation / Regular)</option>
+          <option value="Batch 2">Batch 2 (Bridge Course / Super)</option>
           <option value="All Batches">All Batches (அனைத்து Batches)</option>
         `;
       } else {
@@ -710,7 +738,7 @@
       btn.disabled = true;
       btn.innerText = "பதிவேற்றப்படுகிறது...";
 
-      const safeTitle = (titleInput || 'CLASS 12 - PHYSICS TEST').trim();
+      const safeTitle = (titleInput || `CLASS ${grade} - PHYSICS TEST`).trim();
 
       const { error } = await supabaseClient.from('exams').insert([{
         title: safeTitle,
@@ -756,13 +784,25 @@
       filterAdminExamsList();
     }
 
+    function setAdminGradeFilter(grade) {
+      activeAdminGradeFilter = grade;
+      ['ALL', '12', '11', '10'].forEach(g => {
+        const btn = document.getElementById(`gradeFilterBtn_${g}`);
+        if (!btn) return;
+        btn.className = (g === grade)
+          ? "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 shadow-sm transition"
+          : "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition";
+      });
+      filterAdminExamsList();
+    }
+
     function setAdminMediumFilter(med) {
       activeAdminMediumFilter = med;
       ['ALL', 'TAMIL', 'ENGLISH'].forEach(m => {
         const btn = document.getElementById(`medFilterBtn_${m}`);
         if (!btn) return;
         btn.className = (m === med)
-          ? "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 shadow-sm transition"
+          ? "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition"
           : "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-200 text-slate-700 border transition";
       });
       filterAdminExamsList();
@@ -794,13 +834,13 @@
           { key: 'COMBO', name: '⚡ Combo' }
         ],
         NEET: [
-          { key: 'UNIT_TEST', name: '🎯 Unit Test' },
+          { key: 'UNIT_TEST', name: '🎯 Unit Test / Bridge' },
           { key: 'NCERT_LINE', name: '🔬 NCERT Line' },
           { key: 'PYQ', name: '⏳ PYQ' },
           { key: 'COMBO_FULL', name: '🏆 Full Mock' }
         ],
         JEE: [
-          { key: 'CHAPTER_TEST', name: '📐 Chapter Test' },
+          { key: 'CHAPTER_TEST', name: '📐 Chapter Test / Bridge' },
           { key: 'PYQ_JEE', name: '⏳ JEE PYQ' },
           { key: 'MOCK_TEST', name: '🚀 Full Mock' }
         ]
@@ -856,6 +896,7 @@
         if (title.includes('book back') || title.includes('பாடநூல்')) sub = 'BOOK_BACK';
         else if (title.includes('created') || title.includes('உள் வினா')) sub = 'CREATED';
 
+        const matchGrade = (activeAdminGradeFilter === 'ALL') || (grade === activeAdminGradeFilter);
         const matchMedium = (activeAdminMediumFilter === 'ALL') || (medium === activeAdminMediumFilter);
         let matchMain = (activeAdminMainFilter === 'ALL') || (type === activeAdminMainFilter);
         if (!matchMain && title.includes(activeAdminMainFilter.toLowerCase())) matchMain = true;
@@ -865,7 +906,7 @@
 
         const matchQuery = !query || title.includes(query) || type.toLowerCase().includes(query) || sub.toLowerCase().includes(query) || grade.includes(query) || medium.toLowerCase().includes(query);
 
-        return matchMedium && matchMain && matchSub && matchQuery;
+        return matchGrade && matchMedium && matchMain && matchSub && matchQuery;
       });
 
       renderAdminExamsTable(filtered);
