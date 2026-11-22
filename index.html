@@ -344,10 +344,7 @@
       else if (examTitleText.includes('neet')) type = 'NEET';
       else if (examTitleText.includes('board') || type.includes('BOARD') || type.includes('STATE')) type = 'BOARD';
 
-      if (examTitleText.includes('10') || examTitleText.includes('10-ஆம்')) grade = 10;
-      else if (examTitleText.includes('11') || examTitleText.includes('11-ஆம்')) grade = 11;
-      else if (examTitleText.includes('12') || examTitleText.includes('12-ஆம்')) grade = 12;
-
+     grade = parseInt(exam.grade) || 12;
       let sub = 'BOOK_BACK';
 
       if (rawSub === 'BOOK_BACK' || examTitleText.includes('book back') || examTitleText.includes('பாடநூல்')) {
