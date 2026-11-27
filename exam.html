@@ -62,7 +62,11 @@
       <h1 class="text-sm md:text-base font-bold text-amber-400" id="examHeaderTitle">தேர்வு அறை</h1>
       <p class="text-[11px] text-slate-400" id="examHeaderSub">KALAMNESAN ONLINE TEST</p>
     </div>
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+      <button type="button" onclick="switchStudentSession()" id="btnSwitchStudent" class="hidden bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold px-2.5 py-1.5 rounded-xl text-[11px] transition border border-slate-600">
+        மாணவர் மாற்று
+      </button>
+
       <div class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-sm font-mono font-bold flex items-center gap-2" id="timerBox">
         <i class="fa-regular fa-clock"></i> <span id="timeLeft">00:00</span>
       </div>
@@ -90,7 +94,7 @@
           ⚛
         </div>
         <h3 class="text-lg font-bold text-white">தேர்வு அனுமதி சரிபார்ப்பு</h3>
-        <p class="text-xs text-slate-400">பதிவு செய்யப்பட்ட மொபைல் எண் மற்றும் பதிவு எண்ணை உள்ளிடவும்</p>
+        <p class="text-xs text-slate-400">ஒருமுறை உள்நுழைந்தால் உங்கள் அனுமதிக்கப்பட்ட பிரிவின் அனைத்துத் தேர்வுகளையும் எழுதலாம்</p>
       </div>
 
       <div class="space-y-3 pt-2">
@@ -415,13 +419,14 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFneW1vdGdwcWZnaG91dGV0dHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NjA5NzIsImV4cCI6MjEwOTUzNjk3Mn0.KeTw76EwZQimmoPkxzVTWfd0p6WxavLsnhrZCsWmYec';
     
     const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const STUDENT_SESSION_KEY = 'kn_verified_student_v1';
 
     let examData = null;
     let questionsList = [];
     let userAnswers = {};
     let reviewMarked = {};
     let timerInterval = null;
-    let studentInfo = { name: '', roll: '', phone: '' };
+    let studentInfo = { name: '', roll: '', phone: '', grade: 0, medium: 'ALL', targetExam: 'ALL' };
     let isExamRunning = false;
     let tabSwitchWarnings = 0;
     let isAutoSubmitting = false;
@@ -440,6 +445,72 @@
         localStorage.setItem(key, id);
       }
       return id;
+    }
+
+    function saveStudentSession(sessionObj) {
+      try {
+        localStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(sessionObj));
+      } catch (_) {}
+    }
+
+    function getSavedStudentSession() {
+      try {
+        const raw = localStorage.getItem(STUDENT_SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function switchStudentSession() {
+      if (!confirm('தற்போதைய மாணவர் கணக்கிலிருந்து வெளியேறி புதிய மாணவராக உள்நுழையவா?')) return;
+      localStorage.removeItem(STUDENT_SESSION_KEY);
+      isExamRunning = false;
+      if (timerInterval) clearInterval(timerInterval);
+      document.body.classList.remove('exam-active-lock');
+      document.getElementById('examContent').classList.add('hidden');
+      document.getElementById('resultReviewSection').classList.add('hidden');
+      document.getElementById('instructionsModal').style.display = 'none';
+      document.getElementById('studentAuthModal').style.display = 'flex';
+    }
+
+    function isExamPermittedForStudent(studentObj, examRow) {
+      if (!studentObj || !examRow) return true;
+      const examGrade = parseInt(examRow.grade) || 0;
+      const studentGrade = parseInt(studentObj.grade) || 0;
+      if (studentGrade !== 0 && examGrade !== 0 && studentGrade !== examGrade) {
+        return {
+          allowed: false,
+          reason: `நீங்கள் Class ${studentGrade} பிரிவில் அனுமதிக்கப்பட்டுள்ளீர்கள். ஆனால் இது Class ${examGrade} தேர்வு!`
+        };
+      }
+
+      const stMed = String(studentObj.medium || 'ALL').toUpperCase();
+      const exMed = String(examRow.medium || 'TAMIL').toUpperCase();
+      if (stMed !== 'ALL' && stMed !== 'BOTH' && exMed !== stMed) {
+        return {
+          allowed: false,
+          reason: `இந்தத் தேர்வு ${exMed === 'ENGLISH' ? 'English Medium' : 'தமிழ் வழி'}-ல் உள்ளது; உங்கள் அனுமதி ${stMed === 'ENGLISH' ? 'English Medium' : 'தமிழ் வழி'}-க்கு மட்டுமே.`
+        };
+      }
+
+      return { allowed: true };
+    }
+
+    function openGuidelinesForVerifiedStudent() {
+      if (!examData) return;
+      const btnSwitch = document.getElementById('btnSwitchStudent');
+      if (btnSwitch) btnSwitch.classList.remove('hidden');
+
+      document.getElementById('studentAuthModal').style.display = 'none';
+      const pos = (examData.positive_marks != null) ? examData.positive_marks : 1;
+      const neg = (examData.negative_marks != null) ? examData.negative_marks : 0;
+      document.getElementById('insExamTitle').textContent = examData.exam_title || examData.title || 'இயற்பியல் தேர்வு';
+      document.getElementById('insStudentWelcome').textContent = `மாணவர்: ${studentInfo.name} (பதிவு எண்: ${studentInfo.roll})`;
+      document.getElementById('insDuration').textContent = `${examData.duration_minutes || 15} நிமிடம்`;
+      document.getElementById('insQCount').textContent = questionsList.length;
+      document.getElementById('insMarking').textContent = `+${pos} / -${neg}`;
+      document.getElementById('instructionsModal').style.display = 'flex';
     }
 
     function logSecurityEvent(eventType, details = {}) {
@@ -582,29 +653,26 @@
           allowedStudent = studentList[0];
         }
 
-        const examGrade = parseInt(examData?.grade) || 12;
-        const studentGrade = parseInt(allowedStudent.grade) || 0;
+        const sessionObj = {
+          name,
+          roll,
+          phone,
+          grade: parseInt(allowedStudent.grade) || 0,
+          medium: String(allowedStudent.medium || 'ALL').toUpperCase(),
+          targetExam: String(allowedStudent.target_exam || 'ALL')
+        };
 
-        if (studentGrade !== 0 && studentGrade !== examGrade) {
+        const check = isExamPermittedForStudent(sessionObj, examData);
+        if (!check.allowed) {
           btn.disabled = false;
           btn.innerText = "அனுமதி சரிபார் ➔";
-          alert(`⚠️ அனுமதி மறுக்கப்பட்டது!\n\nநீங்கள் Class ${studentGrade} பிரிவில் அனுமதிக்கப்பட்டுள்ளீர்கள். ஆனால் இது Class ${examGrade} தேர்வு!`);
+          alert(`⚠️ அனுமதி மறுக்கப்பட்டது!\n\n${check.reason}`);
           return;
         }
 
-        studentInfo = { name, roll, phone };
-
-        document.getElementById('studentAuthModal').style.display = 'none';
-
-        const pos = (examData.positive_marks != null) ? examData.positive_marks : 1;
-        const neg = (examData.negative_marks != null) ? examData.negative_marks : 0;
-        document.getElementById('insExamTitle').textContent = examData.exam_title || examData.title || 'இயற்பியல் தேர்வு';
-        document.getElementById('insStudentWelcome').textContent = `மாணவர்: ${name} (பதிவு எண்: ${roll})`;
-        document.getElementById('insDuration').textContent = `${examData.duration_minutes || 15} நிமிடம்`;
-        document.getElementById('insQCount').textContent = questionsList.length;
-        document.getElementById('insMarking').textContent = `+${pos} / -${neg}`;
-
-        document.getElementById('instructionsModal').style.display = 'flex';
+        studentInfo = sessionObj;
+        saveStudentSession(sessionObj);
+        openGuidelinesForVerifiedStudent();
 
       } catch (err) {
         btn.disabled = false;
@@ -655,9 +723,22 @@
         else questionsList = [];
 
         if (isDemoMode && examData.is_demo) {
-          studentInfo = { name: 'Demo Student', roll: 'DEMO', phone: '0000000000' };
+          studentInfo = { name: 'Demo Student', roll: 'DEMO', phone: '0000000000', grade: 0, medium: 'ALL', targetExam: 'DEMO' };
           document.getElementById('studentAuthModal').style.display = 'none';
           startActualExam();
+          return;
+        }
+
+        const savedSession = getSavedStudentSession();
+        if (savedSession && savedSession.phone && savedSession.name) {
+          const check = isExamPermittedForStudent(savedSession, examData);
+          if (check.allowed) {
+            studentInfo = savedSession;
+            openGuidelinesForVerifiedStudent();
+          } else {
+            alert(`⚠️ அனுமதி மறுக்கப்பட்டது!\n\n${check.reason}`);
+            window.location.href = 'index.html';
+          }
         }
 
       } catch (err) {
