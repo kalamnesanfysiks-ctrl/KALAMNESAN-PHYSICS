@@ -13,16 +13,22 @@ function toYouTubeEmbedUrl(rawUrl) {
       if (v) return `https://www.youtube.com/embed/${encodeURIComponent(v)}`;
       if (parsed.pathname.startsWith("/embed/")) return rawUrl;
     }
-  } catch (_) {
-    // Fallback for non-standard strings
-  }
-  if (rawUrl.includes("watch?v=")) {
-    return rawUrl.replace("watch?v=", "embed/").split("&")[0];
-  }
-  if (rawUrl.includes("youtu.be/")) {
-    return rawUrl.replace("youtu.be/", "www.youtube.com/embed/").split("?")[0];
-  }
+  } catch (_) {}
+  if (rawUrl.includes("watch?v=")) return rawUrl.replace("watch?v=", "embed/").split("&")[0];
+  if (rawUrl.includes("youtu.be/")) return rawUrl.replace("youtu.be/", "www.youtube.com/embed/").split("?")[0];
   return rawUrl;
+}
+
+function getQuestionCount(questions) {
+  try {
+    if (typeof questions === "string") {
+      const p = JSON.parse(questions);
+      return Array.isArray(p) ? p.length : (Array.isArray(p?.questions) ? p.questions.length : 0);
+    }
+    if (Array.isArray(questions)) return questions.length;
+    if (questions && Array.isArray(questions.questions)) return questions.questions.length;
+  } catch (_) {}
+  return 0;
 }
 
 export class KalamnesanNav {
@@ -32,6 +38,7 @@ export class KalamnesanNav {
     this.supabase = supabaseClient;
     this.state = {
       track: null,
+      stream: null,
       medium: null,
       subject: null,
       subfolder: null
@@ -76,9 +83,7 @@ export class KalamnesanNav {
     `;
 
     this.container.querySelectorAll(".kn-track-card").forEach((card) => {
-      card.addEventListener("click", () => {
-        this.selectTrack(card.dataset.track);
-      });
+      card.addEventListener("click", () => this.selectTrack(card.dataset.track));
     });
   }
 
@@ -93,34 +98,54 @@ export class KalamnesanNav {
 
     try {
       const { data, error } = await this.supabase.rpc("get_demo_exams");
-      if (error || !Array.isArray(data) || data.length === 0) {
-        demoGrid.innerHTML = `<div class="kn-empty">தற்போது மாதிரித் தேர்வுகள் இல்லை.</div>`;
+      if (!error && Array.isArray(data) && data.length > 0) {
+        this.renderDemoCards(demoGrid, data);
         return;
       }
 
-      demoGrid.innerHTML = data.map((exam) => `
-        <div class="kn-demo-card">
-          <div class="kn-badge">Demo</div>
-          <h4>${exam.title || exam.exam_title || "Demo Test"}</h4>
-          <p>Questions: ${exam.question_count ?? 0} | Duration: ${exam.duration_minutes ?? 15} mins</p>
-          <div class="kn-demo-actions">
-            ${exam.pre_test_video_url ? `
-              <button type="button" class="kn-btn-video" data-video="${encodeURIComponent(exam.pre_test_video_url)}">▶ Video</button>
-            ` : ""}
-            <button type="button" class="kn-btn-start-demo" data-exam-id="${encodeURIComponent(exam.id)}">Take Demo</button>
-          </div>
-        </div>
-      `).join("");
+      // Fallback to exams table if is_demo rows exist directly
+      if (this.supabase.from) {
+        const { data: rows } = await this.supabase
+          .from("exams")
+          .select("id, title, exam_title, duration_minutes, pre_test_video_url, questions")
+          .eq("is_demo", true);
+        if (Array.isArray(rows) && rows.length > 0) {
+          const mapped = rows.map((r) => ({
+            ...r,
+            question_count: getQuestionCount(r.questions)
+          }));
+          this.renderDemoCards(demoGrid, mapped);
+          return;
+        }
+      }
 
-      demoGrid.querySelectorAll(".kn-btn-video").forEach((b) => {
-        b.addEventListener("click", () => this.showVideoModal(decodeURIComponent(b.dataset.video || "")));
-      });
-      demoGrid.querySelectorAll(".kn-btn-start-demo").forEach((b) => {
-        b.addEventListener("click", () => this.onStartExam(decodeURIComponent(b.dataset.examId || ""), { isDemo: true }));
-      });
-    } catch (e) {
+      demoGrid.innerHTML = `<div class="kn-empty">தற்போது மாதிரித் தேர்வுகள் இல்லை.</div>`;
+    } catch (_) {
       demoGrid.innerHTML = `<div class="kn-empty">மாதிரித் தேர்வுகளை ஏற்ற முடியவில்லை.</div>`;
     }
+  }
+
+  renderDemoCards(demoGrid, list) {
+    demoGrid.innerHTML = list.map((exam) => `
+      <div class="kn-demo-card">
+        <div class="kn-badge">Demo</div>
+        <h4>${exam.title || exam.exam_title || "Demo Test"}</h4>
+        <p>Questions: ${exam.question_count ?? 0} | Duration: ${exam.duration_minutes ?? 15} mins</p>
+        <div class="kn-demo-actions">
+          ${exam.pre_test_video_url ? `
+            <button type="button" class="kn-btn-video" data-video="${encodeURIComponent(exam.pre_test_video_url)}">▶ Video</button>
+          ` : ""}
+          <button type="button" class="kn-btn-start-demo" data-exam-id="${encodeURIComponent(exam.id)}">Take Demo</button>
+        </div>
+      </div>
+    `).join("");
+
+    demoGrid.querySelectorAll(".kn-btn-video").forEach((b) => {
+      b.addEventListener("click", () => this.showVideoModal(decodeURIComponent(b.dataset.video || "")));
+    });
+    demoGrid.querySelectorAll(".kn-btn-start-demo").forEach((b) => {
+      b.addEventListener("click", () => this.onStartExam(decodeURIComponent(b.dataset.examId || ""), { isDemo: true }));
+    });
   }
 
   selectTrack(trackId) {
@@ -128,26 +153,75 @@ export class KalamnesanNav {
     if (!cfg) return;
 
     this.state.track = trackId;
+    this.state.stream = null;
     this.state.medium = null;
     this.state.subject = null;
     this.state.subfolder = null;
 
-    if (cfg.allowed_mediums.length === 1 && cfg.allowed_mediums[0] === "en") {
+    if (Array.isArray(cfg.streams) && cfg.streams.length > 1) {
+      this.renderStreamPicker(cfg);
+    } else if (Array.isArray(cfg.streams) && cfg.streams.length === 1) {
+      this.selectStream(cfg.streams[0].id);
+    } else if (cfg.allowed_mediums.length === 1 && cfg.allowed_mediums[0] === "en") {
       this.state.medium = "en";
       this.renderSubjects();
     } else {
-      this.renderMediumPicker(cfg);
+      this.renderMediumPicker(["ta", "en"]);
     }
   }
 
-  renderMediumPicker(cfg) {
+  renderStreamPicker(cfg) {
     if (!this.container) return;
-    const allowTa = cfg.allowed_mediums.includes("ta");
-    const allowEn = cfg.allowed_mediums.includes("en");
-
     this.container.innerHTML = `
       <div class="kn-nav-wrapper">
         <button type="button" class="kn-back-btn" id="knBackTrack">← Back</button>
+        <h3>பாடத்திட்டம் / பிரிவைத் தேர்ந்தெடுக்கவும் (Select Board / Stream)</h3>
+        <div class="kn-track-grid">
+          ${cfg.streams.map((st) => `
+            <div class="kn-track-card" data-stream="${st.id}">
+              <h4>${st.label_en}</h4>
+              <span>${st.label_ta}</span>
+              <span class="kn-track-arrow">➔</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+    document.getElementById("knBackTrack").onclick = () => {
+      this.renderHomePage();
+      this.loadDemoExams();
+    };
+    this.container.querySelectorAll(".kn-track-card").forEach((c) => {
+      c.addEventListener("click", () => this.selectStream(c.dataset.stream));
+    });
+  }
+
+  selectStream(streamId) {
+    const cfg = TRACK_CONFIG[this.state.track];
+    if (!cfg) return;
+    this.state.stream = streamId;
+
+    const streamObj = (cfg.streams || []).find((s) => s.id === streamId);
+    const allowed = (streamObj && Array.isArray(streamObj.mediums))
+      ? streamObj.mediums
+      : cfg.allowed_mediums;
+
+    if (allowed.length === 1 && allowed[0] === "en") {
+      this.state.medium = "en";
+      this.renderSubjects();
+    } else {
+      this.renderMediumPicker(allowed);
+    }
+  }
+
+  renderMediumPicker(allowedMediums = ["ta", "en"]) {
+    if (!this.container) return;
+    const allowTa = allowedMediums.includes("ta");
+    const allowEn = allowedMediums.includes("en");
+
+    this.container.innerHTML = `
+      <div class="kn-nav-wrapper">
+        <button type="button" class="kn-back-btn" id="knBackMedParent">← Back</button>
         <h3>தேர்வு மொழியைத் தேர்ந்தெடுக்கவும் (Select Medium)</h3>
         <div class="kn-medium-grid">
           ${allowTa ? `<div class="kn-med-card" data-med="ta"><h4>தமிழ் வழி (Tamil Medium)</h4></div>` : ""}
@@ -155,9 +229,14 @@ export class KalamnesanNav {
         </div>
       </div>
     `;
-    document.getElementById("knBackTrack").onclick = () => {
-      this.renderHomePage();
-      this.loadDemoExams();
+    document.getElementById("knBackMedParent").onclick = () => {
+      const cfg = TRACK_CONFIG[this.state.track];
+      if (cfg && Array.isArray(cfg.streams) && cfg.streams.length > 1) {
+        this.renderStreamPicker(cfg);
+      } else {
+        this.renderHomePage();
+        this.loadDemoExams();
+      }
     };
     this.container.querySelectorAll(".kn-med-card").forEach((c) => {
       c.addEventListener("click", () => {
@@ -174,7 +253,7 @@ export class KalamnesanNav {
 
     this.container.innerHTML = `
       <div class="kn-nav-wrapper">
-        <button type="button" class="kn-back-btn" id="knBackMed">← Back</button>
+        <button type="button" class="kn-back-btn" id="knBackSubParent">← Back</button>
         <h3>பாடத்தைத் தேர்ந்தெடுக்கவும் (Choose Subject)</h3>
         <div class="kn-track-grid">
           ${cfg.subjects.map((s) => `
@@ -185,7 +264,20 @@ export class KalamnesanNav {
         </div>
       </div>
     `;
-    document.getElementById("knBackMed").onclick = () => this.selectTrack(this.state.track);
+    document.getElementById("knBackSubParent").onclick = () => {
+      const streamObj = (cfg.streams || []).find((s) => s.id === this.state.stream);
+      const allowed = (streamObj && Array.isArray(streamObj.mediums)) ? streamObj.mediums : cfg.allowed_mediums;
+      if (allowed.length === 1 && allowed[0] === "en") {
+        if (Array.isArray(cfg.streams) && cfg.streams.length > 1) {
+          this.renderStreamPicker(cfg);
+        } else {
+          this.renderHomePage();
+          this.loadDemoExams();
+        }
+      } else {
+        this.renderMediumPicker(allowed);
+      }
+    };
     this.container.querySelectorAll(".kn-subject-card").forEach((c) => {
       c.addEventListener("click", () => {
         this.state.subject = c.dataset.sub;
@@ -198,7 +290,7 @@ export class KalamnesanNav {
     if (!this.container) return;
     this.container.innerHTML = `
       <div class="kn-nav-wrapper">
-        <button type="button" class="kn-back-btn" id="knBackSub">← Back</button>
+        <button type="button" class="kn-back-btn" id="knBackFolderParent">← Back</button>
         <h3>பிரிவைத் தேர்ந்தெடுக்கவும் (Select Test Folder)</h3>
         <div class="kn-folder-grid">
           ${SUBFOLDERS.map((f) => `
@@ -210,7 +302,7 @@ export class KalamnesanNav {
         </div>
       </div>
     `;
-    document.getElementById("knBackSub").onclick = () => this.renderSubjects();
+    document.getElementById("knBackFolderParent").onclick = () => this.renderSubjects();
     this.container.querySelectorAll(".kn-subfolder-card").forEach((c) => {
       c.addEventListener("click", () => {
         this.state.subfolder = c.dataset.folder;
@@ -219,18 +311,50 @@ export class KalamnesanNav {
     });
   }
 
+  async fetchLegacyMatchingExams() {
+    if (!this.supabase || !this.supabase.from) return [];
+    const { data, error } = await this.supabase
+      .from("exams")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error || !Array.isArray(data)) return [];
+
+    const gradeNum = this.state.track === "10th" ? 10 : this.state.track === "11th" ? 11 : this.state.track === "12th" ? 12 : null;
+    const medUpper = this.state.medium === "en" ? "ENGLISH" : "TAMIL";
+
+    return data
+      .filter((e) => e.is_published !== false)
+      .filter((e) => {
+        if (gradeNum && Number(e.grade) !== gradeNum) return false;
+        const rowMed = String(e.medium || "TAMIL").toUpperCase();
+        if (rowMed !== medUpper && rowMed !== "ALL" && rowMed !== "BOTH") return false;
+
+        const rowType = String(e.exam_type || "BOARD").toUpperCase();
+        if (this.state.stream === "tn_board" && !rowType.includes("BOARD") && !rowType.includes("STATE")) return false;
+        if (this.state.stream === "neet" && !rowType.includes("NEET")) return false;
+        if (this.state.stream === "jee" && !rowType.includes("JEE")) return false;
+
+        return true;
+      })
+      .map((r) => ({
+        ...r,
+        question_count: getQuestionCount(r.questions)
+      }));
+  }
+
   async loadTestList() {
     if (!this.container) return;
     this.container.innerHTML = `
       <div class="kn-nav-wrapper">
-        <button type="button" class="kn-back-btn" id="knBackFolder">← Back</button>
+        <button type="button" class="kn-back-btn" id="knBackTestList">← Back</button>
         <h3>தேர்வுகள் பட்டியல் (Available Tests)</h3>
         <div id="knTestListContainer" class="kn-test-grid">
           <div class="kn-loading">தேர்வுகள் ஏற்றப்படுகின்றன...</div>
         </div>
       </div>
     `;
-    document.getElementById("knBackFolder").onclick = () => this.renderSubfolders();
+    document.getElementById("knBackTestList").onclick = () => this.renderSubfolders();
 
     const container = document.getElementById("knTestListContainer");
     if (!container) return;
@@ -247,12 +371,19 @@ export class KalamnesanNav {
       p_medium: this.state.medium
     });
 
-    if (error || !Array.isArray(data) || data.length === 0) {
+    let examsToRender = (!error && Array.isArray(data) && data.length > 0) ? data : [];
+
+    // Fallback to existing exams table rows so older tests aren't lost
+    if (examsToRender.length === 0) {
+      examsToRender = await this.fetchLegacyMatchingExams();
+    }
+
+    if (examsToRender.length === 0) {
       container.innerHTML = `<div class="kn-empty">இப்பிரிவில் தற்போது தேர்வுகள் எதுவும் பதிவேற்றப்படவில்லை.</div>`;
       return;
     }
 
-    container.innerHTML = data.map((exam) => `
+    container.innerHTML = examsToRender.map((exam) => `
       <div class="kn-test-card">
         <h4>${exam.title || exam.exam_title || "Physics Test"}</h4>
         <p>வினாக்கள்: ${exam.question_count ?? 0} | நேரம்: ${exam.duration_minutes ?? 15} நிமிடம்</p>
