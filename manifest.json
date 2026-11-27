@@ -10,16 +10,16 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "kalam.png",
+      "src": "./kalam.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "kalam.png",
+      "src": "./kalam.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ]
 }
