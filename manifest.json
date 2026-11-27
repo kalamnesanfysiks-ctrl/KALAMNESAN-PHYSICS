@@ -1,22 +1,25 @@
 {
-  "name": "KALAMNESAN PHYSICS - தேர்வு மையம்",
+  "name": "KALAMNESAN PHYSICS",
   "short_name": "Kalamnesan",
-  "description": "Online Physics Exam Portal for Class 11, 12, NEET and JEE",
+  "description": "Kalamnesan Physics Online Test & Learning Portal",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#020617",
+  "background_color": "#0f172a",
   "theme_color": "#1e1b4b",
   "orientation": "portrait-primary",
   "icons": [
     {
       "src": "kalam.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "kalam.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
