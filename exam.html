@@ -608,15 +608,17 @@
 
       const name = nameEl ? nameEl.value.trim() : '';
       const roll = rollEl ? rollEl.value.trim() : '';
-      const phone = phoneEl ? phoneEl.value.trim() : '';
+      const phone = (phoneEl ? phoneEl.value.trim() : '').replace(/\D/g, '');
 
-      if (!name || !roll || phone.length !== 10 || isNaN(phone)) {
+      if (!name || !roll || phone.length !== 10) {
         alert('தயவுசெய்து உங்கள் பெயர், பதிவு எண் மற்றும் 10-இலக்க மொபைல் எண்ணை சரியாக உள்ளிடவும்!');
         return;
       }
 
-      btn.disabled = true;
-      btn.innerText = "சரிபார்க்கப்படுகிறது...";
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "சரிபார்க்கப்படுகிறது...";
+      }
 
       if (!examData) {
         await fetchExamData();
@@ -624,29 +626,38 @@
 
       try {
         let allowedStudent = null;
-        const { data: rpcRes, error: rpcErr } = await client.rpc('login_student_with_device', {
-          p_phone_number: phone,
-          p_device_id: getDeviceId(),
-          p_roll_number: roll
-        });
 
-        if (!rpcErr && rpcRes && typeof rpcRes === 'object') {
-          if (rpcRes.ok === false) {
-            btn.disabled = false;
-            btn.innerText = "அனுமதி சரிபார் ➔";
-            alert(`⚠️ அனுமதி மறுக்கப்பட்டது!\n\n${rpcRes.message || 'தயவுசெய்து ஆசிரியர் M. Ramesh (8072524484) அவர்களைத் தொடர்பு கொள்ளவும்.'}`);
-            return;
+        if (typeof client.rpc === 'function') {
+          const { data: rpcRes, error: rpcErr } = await client.rpc('login_student_with_device', {
+            p_phone_number: phone,
+            p_device_id: getDeviceId(),
+            p_roll_number: roll
+          });
+
+          if (!rpcErr && rpcRes && typeof rpcRes === 'object') {
+            if (rpcRes.ok === false) {
+              if (btn) {
+                btn.disabled = false;
+                btn.innerText = "அனுமதி சரிபார் ➔";
+              }
+              alert(`⚠️ அனுமதி மறுக்கப்பட்டது!\n\n${rpcRes.message || 'தயவுசெய்து ஆசிரியர் M. Ramesh (8072524484) அவர்களைத் தொடர்பு கொள்ளவும்.'}`);
+              return;
+            }
+            allowedStudent = rpcRes;
           }
-          allowedStudent = rpcRes;
-        } else {
+        }
+
+        if (!allowedStudent) {
           const { data: studentList, error: stErr } = await client
             .from('paid_students')
             .select('*')
             .eq('phone_number', phone);
 
           if (stErr || !studentList || studentList.length === 0) {
-            btn.disabled = false;
-            btn.innerText = "அனுமதி சரிபார் ➔";
+            if (btn) {
+              btn.disabled = false;
+              btn.innerText = "அனுமதி சரிபார் ➔";
+            }
             alert(`⚠️ மன்னிக்கவும் ${name}! உங்கள் மொபைல் எண் (${phone}) அனுமதிக்கப்படவில்லை.\n\nதயவுசெய்து ஆசிரியர் M. Ramesh (8072524484) அவர்களைத் தொடர்பு கொள்ளவும்.`);
             return;
           }
@@ -664,10 +675,17 @@
 
         const check = isExamPermittedForStudent(sessionObj, examData);
         if (!check.allowed) {
-          btn.disabled = false;
-          btn.innerText = "அனுமதி சரிபார் ➔";
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = "அனுமதி சரிபார் ➔";
+          }
           alert(`⚠️ அனுமதி மறுக்கப்பட்டது!\n\n${check.reason}`);
           return;
+        }
+
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = "அனுமதி சரிபார் ➔";
         }
 
         studentInfo = sessionObj;
@@ -675,8 +693,10 @@
         openGuidelinesForVerifiedStudent();
 
       } catch (err) {
-        btn.disabled = false;
-        btn.innerText = "அனுமதி சரிபார் ➔";
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = "அனுமதி சரிபார் ➔";
+        }
         alert("அனுமதி சரிபார்ப்பதில் பிழை: " + err.message);
       }
     }
@@ -736,8 +756,8 @@
             studentInfo = savedSession;
             openGuidelinesForVerifiedStudent();
           } else {
-            alert(`⚠️ அனுமதி மறுக்கப்பட்டது!\n\n${check.reason}`);
-            window.location.href = 'index.html';
+            localStorage.removeItem(STUDENT_SESSION_KEY);
+            document.getElementById('studentAuthModal').style.display = 'flex';
           }
         }
 
