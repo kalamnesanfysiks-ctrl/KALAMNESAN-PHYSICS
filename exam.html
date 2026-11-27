@@ -28,7 +28,16 @@
       box-shadow: 0 0 0 6px #1e1b4b, 0 15px 35px -5px rgba(0, 0, 0, 0.4);
     }
 
+    body.exam-active-lock {
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
     @media print {
+      body.exam-active-lock:not(.printing-cert) {
+        display: none !important;
+      }
       body * { visibility: hidden; }
       #printableCertificate, #printableCertificate * { visibility: visible; }
       #printableCertificate {
@@ -137,6 +146,10 @@
           <li class="flex items-start gap-2">
             <span class="text-purple-400">✔</span>
             <span>சந்தேகமுள்ள வினாக்களை <strong>மறுபார்வைக்கு (Mark for Review)</strong> குறித்து வைத்துப் பின்னர் மாற்றிக் கொள்ளலாம்.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-amber-300">✔</span>
+            <span>தேர்வின் போது Page/Tab மாறினால் <strong>ஒரு முறை எச்சரிக்கை</strong> வழங்கப்படும்; இரண்டாவது முறையும் வெளியேறினால் தேர்வு தானாகச் சமர்ப்பிக்கப்படும்.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="text-rose-400">✔</span>
@@ -409,9 +422,97 @@
     let reviewMarked = {};
     let timerInterval = null;
     let studentInfo = { name: '', roll: '', phone: '' };
+    let isExamRunning = false;
+    let tabSwitchWarnings = 0;
+    let isAutoSubmitting = false;
 
     const urlParams = new URLSearchParams(window.location.search);
     const examId = urlParams.get('id');
+    const isDemoMode = urlParams.get('demo') === '1';
+
+    function getDeviceId() {
+      const key = 'kn_device_uuid_v1';
+      let id = localStorage.getItem(key);
+      if (!id) {
+        id = (window.crypto && window.crypto.randomUUID)
+          ? window.crypto.randomUUID()
+          : 'dev-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem(key, id);
+      }
+      return id;
+    }
+
+    function logSecurityEvent(eventType, details = {}) {
+      if (!client) return;
+      client.from('security_logs').insert([{
+        phone_number: studentInfo.phone || null,
+        roll_number: studentInfo.roll || null,
+        event_type: eventType,
+        details: { exam_id: examId, device_id: getDeviceId(), ...details }
+      }]).then(() => {}).catch(() => {});
+    }
+
+    function handleExamLeaveAttempt(source) {
+      if (!isExamRunning || isAutoSubmitting) return;
+      tabSwitchWarnings += 1;
+      logSecurityEvent('TAB_SWITCH_WARNING', { source, warning_count: tabSwitchWarnings });
+
+      if (tabSwitchWarnings === 1) {
+        alert('⚠️ எச்சரிக்கை (1/1): தேர்வு நடக்கும்போது Page அல்லது Tab மாற்றி வெளியே செல்லக் கூடாது! மீண்டும் வெளியேறினால் உங்கள் தேர்வு தானாகச் சமர்ப்பிக்கப்படும்.');
+      } else {
+        isAutoSubmitting = true;
+        isExamRunning = false;
+        document.body.classList.remove('exam-active-lock');
+        alert('⚠️ மீண்டும் Page/Tab மாறியதால் உங்கள் தேர்வு தானாகச் சமர்ப்பிக்கப்படுகிறது!');
+        submitExam();
+      }
+    }
+
+    function setupExamGuards() {
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && isExamRunning) {
+          handleExamLeaveAttempt('visibilitychange');
+        }
+      });
+
+      window.addEventListener('blur', () => {
+        if (!isExamRunning) return;
+        setTimeout(() => {
+          if (isExamRunning && (document.hidden || document.activeElement === document.body)) {
+            handleExamLeaveAttempt('window_blur');
+          }
+        }, 150);
+      });
+
+      document.addEventListener('contextmenu', (e) => {
+        if (isExamRunning) e.preventDefault();
+      });
+
+      ['copy', 'cut'].forEach((ev) => {
+        document.addEventListener(ev, (e) => {
+          if (isExamRunning) {
+            e.preventDefault();
+            logSecurityEvent('COPY_ATTEMPT', { event: ev });
+          }
+        });
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (!isExamRunning) return;
+        const k = (e.key || '').toLowerCase();
+        if (
+          k === 'f12' ||
+          k === 'printscreen' ||
+          ((e.ctrlKey || e.metaKey) && e.shiftKey && ['i', 'j', 'c', 's'].includes(k)) ||
+          ((e.ctrlKey || e.metaKey) && ['c', 'x', 'u', 's', 'p'].includes(k))
+        ) {
+          e.preventDefault();
+          logSecurityEvent('COPY_ATTEMPT', { key: k });
+        }
+      });
+    }
+
+    setupExamGuards();
 
     function formatPhysicsText(text) {
       if (!text || typeof text !== 'string') return text || '';
@@ -451,19 +552,36 @@
       }
 
       try {
-        const { data: studentList, error: stErr } = await client
-          .from('paid_students')
-          .select('*')
-          .eq('phone_number', phone);
+        let allowedStudent = null;
+        const { data: rpcRes, error: rpcErr } = await client.rpc('login_student_with_device', {
+          p_phone_number: phone,
+          p_device_id: getDeviceId(),
+          p_roll_number: roll
+        });
 
-        if (stErr || !studentList || studentList.length === 0) {
-          btn.disabled = false;
-          btn.innerText = "அனுமதி சரிபார் ➔";
-          alert(`⚠️ மன்னிக்கவும் ${name}! உங்கள் மொபைல் எண் (${phone}) அனுமதிக்கப்படவில்லை.\n\nதயவுசெய்து ஆசிரியர் M. Ramesh (8072524484) அவர்களைத் தொடர்பு கொள்ளவும்.`);
-          return;
+        if (!rpcErr && rpcRes && typeof rpcRes === 'object') {
+          if (rpcRes.ok === false) {
+            btn.disabled = false;
+            btn.innerText = "அனுமதி சரிபார் ➔";
+            alert(`⚠️ அனுமதி மறுக்கப்பட்டது!\n\n${rpcRes.message || 'தயவுசெய்து ஆசிரியர் M. Ramesh (8072524484) அவர்களைத் தொடர்பு கொள்ளவும்.'}`);
+            return;
+          }
+          allowedStudent = rpcRes;
+        } else {
+          const { data: studentList, error: stErr } = await client
+            .from('paid_students')
+            .select('*')
+            .eq('phone_number', phone);
+
+          if (stErr || !studentList || studentList.length === 0) {
+            btn.disabled = false;
+            btn.innerText = "அனுமதி சரிபார் ➔";
+            alert(`⚠️ மன்னிக்கவும் ${name}! உங்கள் மொபைல் எண் (${phone}) அனுமதிக்கப்படவில்லை.\n\nதயவுசெய்து ஆசிரியர் M. Ramesh (8072524484) அவர்களைத் தொடர்பு கொள்ளவும்.`);
+            return;
+          }
+          allowedStudent = studentList[0];
         }
 
-        const allowedStudent = studentList[0];
         const examGrade = parseInt(examData?.grade) || 12;
         const studentGrade = parseInt(allowedStudent.grade) || 0;
 
@@ -476,7 +594,6 @@
 
         studentInfo = { name, roll, phone };
 
-        // Auth Modal-ஐ மூடிவிட்டு Instructions Modal-ஐக் காட்டுதல்
         document.getElementById('studentAuthModal').style.display = 'none';
 
         const pos = (examData.positive_marks != null) ? examData.positive_marks : 1;
@@ -499,6 +616,10 @@
     // 2. மாணவர் ஒப்புதல் அளித்ததும் தேர்வைத் தொடங்குதல்
     function startActualExam() {
       document.getElementById('instructionsModal').style.display = 'none';
+      isExamRunning = true;
+      tabSwitchWarnings = 0;
+      isAutoSubmitting = false;
+      document.body.classList.add('exam-active-lock');
       renderExamUI();
     }
 
@@ -532,6 +653,12 @@
         if (Array.isArray(raw)) questionsList = raw;
         else if (raw && Array.isArray(raw.questions)) questionsList = raw.questions;
         else questionsList = [];
+
+        if (isDemoMode && examData.is_demo) {
+          studentInfo = { name: 'Demo Student', roll: 'DEMO', phone: '0000000000' };
+          document.getElementById('studentAuthModal').style.display = 'none';
+          startActualExam();
+        }
 
       } catch (err) {
         console.error("fetchExamData Error:", err);
@@ -738,6 +865,8 @@
 
         if (remainingSeconds <= 0) {
           clearInterval(timerInterval);
+          isExamRunning = false;
+          document.body.classList.remove('exam-active-lock');
           alert('தேர்வுக்கான கால அவகாசம் முடிவடைந்தது! உங்கள் தேர்வு தானாகச் சமர்ப்பிக்கப்படுகிறது.');
           submitExam();
         }
@@ -745,11 +874,17 @@
     }
 
     function confirmSubmitExam() {
-      if (confirm('தேர்வை சமர்ப்பிக்க விரும்புகிறீர்களா?')) submitExam();
+      if (confirm('தேர்வை சமர்ப்பிக்க விரும்புகிறீர்களா?')) {
+        isExamRunning = false;
+        document.body.classList.remove('exam-active-lock');
+        submitExam();
+      }
     }
 
     async function submitExam() {
       if (timerInterval) clearInterval(timerInterval);
+      isExamRunning = false;
+      document.body.classList.remove('exam-active-lock');
 
       const isEnglish = (examData && examData.medium === 'ENGLISH');
       const posMark = (examData && examData.positive_marks != null) ? parseFloat(examData.positive_marks) : 1;
@@ -802,7 +937,6 @@
       document.getElementById('resultReviewSection').classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      // 🎉 Confetti Celebration
       if (window.confetti) {
         confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
       }
@@ -864,7 +998,6 @@
 
         let imageHtml = qData.image ? `<div class="my-3 text-center bg-white p-2 rounded-xl border border-slate-600 inline-block shadow"><img src="${qData.image}" class="max-h-52 mx-auto object-contain rounded-lg"></div>` : '';
 
-        // வாட்ஸ்அப்பில் ஆசிரியரிடம் சந்தேகம் கேட்கும் பட்டன்
         const doubtMsg = encodeURIComponent(`வணக்கம் சார்! தேர்வு: ${examData?.exam_title || 'இயற்பியல்'} - வினா எண் ${idx + 1}-ல் எனக்கு சந்தேகம் உள்ளது.`);
         const doubtLink = `https://wa.me/919629352298?text=${doubtMsg}`;
 
@@ -898,7 +1031,11 @@
       }, 70);
     }
 
-    function downloadCertificate() { window.print(); }
+    function downloadCertificate() {
+      document.body.classList.add('printing-cert');
+      window.print();
+      setTimeout(() => document.body.classList.remove('printing-cert'), 1000);
+    }
 
     function openFullPaperModal() {
       if (!questionsList || questionsList.length === 0) return alert("வினாக்கள் இன்னும் தயாராகவில்லை!");
@@ -966,6 +1103,10 @@
       if (!confirm('இந்தத் தேர்வை மீண்டும் புதிதாக எழுத விரும்புகிறீர்களா?')) return;
       userAnswers = {};
       reviewMarked = {};
+      tabSwitchWarnings = 0;
+      isAutoSubmitting = false;
+      isExamRunning = true;
+      document.body.classList.add('exam-active-lock');
       document.getElementById('resultReviewSection').classList.add('hidden');
       document.getElementById('examContent').classList.remove('hidden');
       document.getElementById('timerBox').classList.remove('hidden');
