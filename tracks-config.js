@@ -4,9 +4,16 @@ export const TRACK_CONFIG = {
     label_ta: "10-ஆம் வகுப்பு",
     allowed_mediums: ["ta", "en"],
     default_medium: "ta",
-    boards: ["State Board", "NCERT"],
+    streams: [
+      { id: "tn_board", label_en: "State Board TN", label_ta: "தமிழ்நாடு மாநிலப் பாடத்திட்டம்", mediums: ["ta", "en"] },
+      { id: "neet_bridge", label_en: "NEET Bridge Course", label_ta: "நீட் அடிப்படைப் பயிற்சி", mediums: ["ta", "en"] },
+      { id: "jee_bridge", label_en: "JEE Bridge Course", label_ta: "ஜே.இ.இ அடிப்படைப் பயிற்சி", mediums: ["ta", "en"] },
+      { id: "ncert", label_en: "NCERT (English Only)", label_ta: "NCERT (ஆங்கில வழி மட்டும்)", mediums: ["en"] },
+      { id: "icse", label_en: "ICSE (English Only)", label_ta: "ICSE (ஆங்கில வழி மட்டும்)", mediums: ["en"] }
+    ],
     subjects: [
       { id: "science", label_en: "Science", label_ta: "அறிவியல்" },
+      { id: "physics", label_en: "Physics", label_ta: "இயற்பியல்" },
       { id: "maths", label_en: "Mathematics", label_ta: "கணிதம்" }
     ]
   },
@@ -15,7 +22,13 @@ export const TRACK_CONFIG = {
     label_ta: "11-ஆம் வகுப்பு",
     allowed_mediums: ["ta", "en"],
     default_medium: "ta",
-    boards: ["State Board", "NEET", "JEE", "NCERT"],
+    streams: [
+      { id: "tn_board", label_en: "State Board TN", label_ta: "தமிழ்நாடு மாநிலப் பாடத்திட்டம்", mediums: ["ta", "en"] },
+      { id: "neet", label_en: "NEET", label_ta: "நீட் (NEET)", mediums: ["ta", "en"] },
+      { id: "jee", label_en: "JEE", label_ta: "ஜே.இ.இ (JEE)", mediums: ["ta", "en"] },
+      { id: "ncert", label_en: "NCERT (English Only)", label_ta: "NCERT (ஆங்கில வழி மட்டும்)", mediums: ["en"] },
+      { id: "icse", label_en: "ICSE (English Only)", label_ta: "ICSE (ஆங்கில வழி மட்டும்)", mediums: ["en"] }
+    ],
     subjects: [
       { id: "physics", label_en: "Physics", label_ta: "இயற்பியல்" },
       { id: "chemistry", label_en: "Chemistry", label_ta: "வேதியியல்" },
@@ -28,7 +41,13 @@ export const TRACK_CONFIG = {
     label_ta: "12-ஆம் வகுப்பு",
     allowed_mediums: ["ta", "en"],
     default_medium: "ta",
-    boards: ["State Board", "NEET", "JEE", "NCERT"],
+    streams: [
+      { id: "tn_board", label_en: "State Board TN", label_ta: "தமிழ்நாடு மாநிலப் பாடத்திட்டம்", mediums: ["ta", "en"] },
+      { id: "neet", label_en: "NEET", label_ta: "நீட் (NEET)", mediums: ["ta", "en"] },
+      { id: "jee", label_en: "JEE", label_ta: "ஜே.இ.இ (JEE)", mediums: ["ta", "en"] },
+      { id: "ncert", label_en: "NCERT (English Only)", label_ta: "NCERT (ஆங்கில வழி மட்டும்)", mediums: ["en"] },
+      { id: "icse", label_en: "ICSE (English Only)", label_ta: "ICSE (ஆங்கில வழி மட்டும்)", mediums: ["en"] }
+    ],
     subjects: [
       { id: "physics", label_en: "Physics", label_ta: "இயற்பியல்" },
       { id: "chemistry", label_en: "Chemistry", label_ta: "வேதியியல்" },
@@ -41,7 +60,9 @@ export const TRACK_CONFIG = {
     label_ta: "UG TRB இயற்பியல்",
     allowed_mediums: ["en"],
     default_medium: "en",
-    boards: ["TRB"],
+    streams: [
+      { id: "ug_trb_stream", label_en: "UG TRB (English Only)", label_ta: "UG TRB (ஆங்கில வழி மட்டும்)", mediums: ["en"] }
+    ],
     subjects: [
       { id: "physics", label_en: "Physics", label_ta: "இயற்பியல்" }
     ]
@@ -51,7 +72,9 @@ export const TRACK_CONFIG = {
     label_ta: "PG TRB இயற்பியல்",
     allowed_mediums: ["en"],
     default_medium: "en",
-    boards: ["TRB"],
+    streams: [
+      { id: "pg_trb_stream", label_en: "PG TRB (English Only)", label_ta: "PG TRB (ஆங்கில வழி மட்டும்)", mediums: ["en"] }
+    ],
     subjects: [
       { id: "physics", label_en: "Physics", label_ta: "இயற்பியல்" }
     ]
