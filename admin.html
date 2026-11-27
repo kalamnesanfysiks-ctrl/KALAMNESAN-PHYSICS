@@ -4,11 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KALAMNESAN PHYSICS - ஆசிரியர் கட்டுப்பாட்டு மையம் (Admin)</title>
-  
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e1b4b">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
-  <!-- 🧮 KaTeX for Physics Math Preview -->
+  <!-- KaTeX for Physics Math Preview -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
@@ -20,7 +23,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen pb-16">
 
-  <!-- 🔒 ஆசிரியர் கடவுச்சொல் சரிபார்ப்புத் திரை (Master Security Gate) -->
+  <!-- 🔒 ஆசிரியர் / Co-Worker கடவுச்சொல் சரிபார்ப்புத் திரை (Master Security Gate) -->
   <div id="adminAuthOverlay" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-3xl max-w-sm w-full shadow-2xl text-center space-y-4">
       <div class="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-2xl mx-auto shadow-inner">
@@ -28,7 +31,7 @@
       </div>
       <div>
         <h3 class="text-lg font-bold text-white">ஆசிரியர் அங்கீகாரம்</h3>
-        <p class="text-xs text-slate-400 mt-1">கட்டுப்பாட்டு மையத்திற்குள் நுழைய ரகசியக் கடவுச்சொல்லை உள்ளிடவும்</p>
+        <p class="text-xs text-slate-400 mt-1">Owner அல்லது Co-Worker கடவுச்சொல்லை உள்ளிடவும்</p>
       </div>
 
       <div class="space-y-3 pt-2 text-left">
@@ -56,7 +59,7 @@
 
     <!-- Header -->
     <header class="bg-indigo-950 text-white shadow-lg sticky top-0 z-30">
-      <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between gap-2 flex-wrap">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-amber-400 p-0.5 shadow">
             <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-bold text-amber-400 text-lg">
@@ -64,15 +67,23 @@
             </div>
           </div>
           <div>
-            <h1 class="text-base md:text-lg font-bold tracking-wider text-amber-300">KALAMNESAN PHYSICS</h1>
-            <p class="text-xs text-indigo-200">ஆசிரியர் கட்டுப்பாட்டு மையம் (Master Admin Dashboard)</p>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h1 class="text-base md:text-lg font-bold tracking-wider text-amber-300">KALAMNESAN PHYSICS</h1>
+              <span id="roleBadge" class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950">OWNER</span>
+            </div>
+            <p class="text-xs text-indigo-200">ஆசிரியர் கட்டுப்பாட்டு மையம் (<span id="activeAdminUserLabel">Master Admin</span>)</p>
           </div>
         </div>
-        <div class="flex items-center gap-2">
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <button type="button" id="ownerChangePassBtn" onclick="openChangePasswordModal()" 
+                  class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-xl border border-amber-500/40 transition">
+            🔑 கடவுச்சொல் மாற்று
+          </button>
           <a href="index.html" class="bg-indigo-900 hover:bg-indigo-800 text-xs text-indigo-200 hover:text-white px-3 py-1.5 rounded-xl border border-indigo-700 transition">
             மாணவர் முகப்பு ➔
           </a>
-          <button onclick="adminLogout()" class="bg-rose-900/80 hover:bg-rose-800 text-rose-200 hover:text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-rose-700 transition flex items-center gap-1 shadow">
+          <button type="button" onclick="adminLogout()" class="bg-rose-900/80 hover:bg-rose-800 text-rose-200 hover:text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-rose-700 transition flex items-center gap-1 shadow">
             <span>🔒</span> லாக் அவுட்
           </button>
         </div>
@@ -80,6 +91,80 @@
     </header>
 
     <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+
+      <!-- 0️⃣ OWNER ONLY: Co-Worker & Permission Management -->
+      <section id="ownerCoWorkerSection" class="bg-white p-6 md:p-8 rounded-3xl border-2 border-amber-300 shadow-sm space-y-5">
+        <div class="border-b border-slate-100 pb-3 flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <span>🛡️</span> Co-Worker & Permission Management (Owner Only)
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">உதவியாளர் / Co-Worker-க்குத் தேவையான அனுமதிகளை மட்டும் வழங்கலாம்; Password மாற்றும் உரிமை Owner-க்கு மட்டுமே</p>
+          </div>
+          <span class="text-xs bg-amber-100 text-amber-950 font-extrabold px-3 py-1 rounded-full">👑 Owner Controls</span>
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Co-Worker பெயர் *</label>
+              <input type="text" id="coWorkerName" placeholder="எ.கா: உதவி ஆசிரியர் / Data Entry" 
+                     class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs outline-none focus:border-indigo-600">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Co-Worker கடவுச்சொல் (Password) *</label>
+              <input type="password" id="coWorkerPass" placeholder="குறைந்தது 4 எழுத்துகள்" 
+                     class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs outline-none focus:border-indigo-600">
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-4 text-xs font-bold text-slate-700 pt-1">
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="permUpload" checked class="rounded text-indigo-600">
+              <span>📤 தேர்வு பதிவேற்றம்</span>
+            </label>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="permEdit" checked class="rounded text-indigo-600">
+              <span>✏️ தேர்வு திருத்தம்</span>
+            </label>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="permStudents" class="rounded text-indigo-600">
+              <span>👥 மாணவர் அனுமதி</span>
+            </label>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="permResults" checked class="rounded text-indigo-600">
+              <span>📊 முடிவுகள் & CSV</span>
+            </label>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="permDelete" class="rounded text-rose-600">
+              <span class="text-rose-700">🗑️ தேர்வு நீக்கம் (Delete)</span>
+            </label>
+          </div>
+
+          <div class="flex justify-end">
+            <button type="button" onclick="addOrUpdateCoWorker()" 
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2 rounded-xl text-xs shadow transition">
+              + Co-Worker சேர் / புதுப்பி
+            </button>
+          </div>
+        </div>
+
+        <div class="border rounded-2xl overflow-hidden overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-700 font-bold border-b">
+              <tr>
+                <th class="p-3">Co-Worker பெயர்</th>
+                <th class="p-3">அனுமதிகள் (Permissions)</th>
+                <th class="p-3">நிலை</th>
+                <th class="p-3 text-right">நடவடிக்கை</th>
+              </tr>
+            </thead>
+            <tbody id="coWorkersTable" class="divide-y text-slate-700">
+              <tr><td colspan="4" class="p-4 text-center text-slate-400">Co-workers ஏற்றப்படுகிறார்கள்...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <!-- 1️⃣ புதிய வினாத்தாள் பதிவேற்றம் -->
       <section class="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
@@ -112,6 +197,12 @@
               <select id="examSubCategory" class="w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none focus:border-indigo-600 bg-amber-50/50 font-bold text-amber-950">
                 <!-- JS auto fills -->
               </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">தேர்விற்கு முந்தைய வீடியோ இணைப்பு (Pre-Test Video Link)</label>
+              <input type="url" id="examPreVideoUrl" placeholder="https://www.youtube.com/watch?v=..." 
+                     class="w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none focus:border-indigo-600">
             </div>
           </div>
 
@@ -148,7 +239,15 @@
             </div>
           </div>
 
-          <!-- 📁 நேரடி JSON ஃபைல் அப்லோட் -->
+          <div class="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 flex items-center justify-between flex-wrap gap-2">
+            <label class="inline-flex items-center gap-2 text-xs font-bold text-amber-950 cursor-pointer">
+              <input type="checkbox" id="examIsDemo" class="rounded text-amber-600">
+              <span>🎯 Home Page Top Demo Test-ஆகக் காட்டு (Free Demo)</span>
+            </label>
+            <span class="text-[11px] text-amber-800">Demo தேர்வுகள் முகப்புப் பக்கத்தின் மேல் பகுதியில் தனியாகத் தெரியும்</span>
+          </div>
+
+          <!-- நேரடி JSON ஃபைல் அப்லோட் -->
           <div class="p-4 bg-indigo-50/70 rounded-2xl border border-indigo-200 mb-3 space-y-1.5">
             <label class="block text-xs font-bold text-indigo-950">
               📁 கணினியிலிருந்து JSON கோப்பைத் தேர்ந்தெடுக்கவும் (Direct File Upload):
@@ -282,10 +381,10 @@
           <span id="examsCountBadge" class="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
         </div>
 
-        <!-- வடிகட்டி கட்டுப்பாடுகள் (Grade + Medium + Main + Sub-Folder) -->
+        <!-- வடிகட்டி கட்டுப்பாடுகள் -->
         <div class="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
           
-          <!-- 🎓 வகுப்பு வடிகட்டி (Grade Filter) -->
+          <!-- வகுப்பு வடிகட்டி -->
           <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200">
             <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <span>🎓</span> வகுப்பு (Class / Grade):
@@ -424,7 +523,45 @@
 
     </main>
 
-    <!-- ✏️ தேர்வு விவரங்களைத் திருத்தும் Modal (Edit Exam Modal) -->
+    <!-- 🔑 OWNER ONLY: கடவுச்சொல் மாற்றும் Modal -->
+    <div id="changePasswordModal" style="display:none;" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
+        <div class="p-5 bg-indigo-950 text-white flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-base text-amber-300">🔑 Owner கடவுச்சொல் மாற்று</h3>
+            <p class="text-xs text-indigo-200 mt-0.5">Owner-க்கு மட்டுமே இந்த மாற்றம் அனுமதிக்கப்படும்</p>
+          </div>
+          <button type="button" onclick="closeChangePasswordModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center text-sm">
+            ✕
+          </button>
+        </div>
+
+        <form onsubmit="handleOwnerPasswordChange(event)" class="p-6 space-y-4 text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">தற்போதைய Owner கடவுச்சொல் *</label>
+            <input type="password" id="currentOwnerPass" required class="w-full px-3.5 py-2.5 border rounded-xl outline-none focus:border-indigo-600">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">புதிய கடவுச்சொல் *</label>
+            <input type="password" id="newOwnerPass" required minlength="4" class="w-full px-3.5 py-2.5 border rounded-xl outline-none focus:border-indigo-600">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">புதிய கடவுச்சொல்லை உறுதி செய்க *</label>
+            <input type="password" id="confirmOwnerPass" required minlength="4" class="w-full px-3.5 py-2.5 border rounded-xl outline-none focus:border-indigo-600">
+          </div>
+          <div class="pt-2 border-t flex justify-end gap-2">
+            <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 font-bold rounded-xl text-slate-700">
+              ரத்து செய்
+            </button>
+            <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 font-bold rounded-xl text-slate-950 shadow">
+              💾 கடவுச்சொல்லைச் சேமி
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- தேர்வு விவரங்களைத் திருத்தும் Modal (Edit Exam Modal) -->
     <div id="editExamModal" style="display:none;" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
         <div class="p-5 bg-indigo-950 text-white flex justify-between items-center">
@@ -482,6 +619,16 @@
             </div>
           </div>
 
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Pre-Test Video Link</label>
+            <input type="url" id="editExamPreVideoUrl" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-3.5 py-2 border rounded-xl text-xs outline-none focus:border-indigo-600">
+          </div>
+
+          <label class="inline-flex items-center gap-2 font-bold text-amber-950 cursor-pointer">
+            <input type="checkbox" id="editExamIsDemo" class="rounded text-amber-600">
+            <span>🎯 Home Page Top Demo Test</span>
+          </label>
+
           <div class="grid grid-cols-3 gap-3">
             <div>
               <label class="block font-bold text-slate-700 mb-1">கால அளவு (நிமிடம்)</label>
@@ -535,89 +682,313 @@
   </div> <!-- End of adminProtectedContent -->
 
   <script>
-    const ADMIN_SECRET_KEY = "RAMESH@123";
+    const DEFAULT_OWNER_PASS = "RAMESH@123";
+    const OWNER_PASS_STORAGE_KEY = "kn_owner_password_v1";
+    const COWORKERS_STORAGE_KEY = "kn_coworkers_v1";
+    const SESSION_ROLE_KEY = "kalamnesan_admin_role";
+    const SESSION_USER_KEY = "kalamnesan_admin_user";
+
+    let currentSessionRole = null; // 'OWNER' | 'COWORKER'
+    let currentSessionPermissions = {
+      can_upload: false,
+      can_edit: false,
+      can_manage_students: false,
+      can_view_results: false,
+      can_delete: false
+    };
+
+    function getOwnerPassword() {
+      return localStorage.getItem(OWNER_PASS_STORAGE_KEY) || DEFAULT_OWNER_PASS;
+    }
+
+    function setOwnerPassword(newPass) {
+      localStorage.setItem(OWNER_PASS_STORAGE_KEY, newPass);
+    }
+
+    function getCoWorkers() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(COWORKERS_STORAGE_KEY) || "[]");
+        return Array.isArray(raw) ? raw : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCoWorkers(list) {
+      localStorage.setItem(COWORKERS_STORAGE_KEY, JSON.stringify(list));
+    }
+
+    function applyRolePermissionsToUI() {
+      const isOwner = currentSessionRole === "OWNER";
+      const badge = document.getElementById("roleBadge");
+      const userLabel = document.getElementById("activeAdminUserLabel");
+      const ownerPassBtn = document.getElementById("ownerChangePassBtn");
+      const coWorkerSection = document.getElementById("ownerCoWorkerSection");
+
+      if (badge) {
+        badge.innerText = isOwner ? "OWNER" : "CO-WORKER";
+        badge.className = isOwner
+          ? "text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950"
+          : "text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-sky-400 text-slate-950";
+      }
+      if (userLabel) {
+        userLabel.innerText = sessionStorage.getItem(SESSION_USER_KEY) || (isOwner ? "Owner (M. Ramesh)" : "Co-Worker");
+      }
+      if (ownerPassBtn) {
+        ownerPassBtn.style.display = isOwner ? "inline-flex" : "none";
+      }
+      if (coWorkerSection) {
+        coWorkerSection.style.display = isOwner ? "block" : "none";
+      }
+
+      const uploadForm = document.getElementById("uploadForm");
+      if (uploadForm && !isOwner && !currentSessionPermissions.can_upload) {
+        uploadForm.querySelectorAll("input, select, textarea, button").forEach(el => { el.disabled = true; });
+      }
+    }
 
     function checkAdminSession() {
-      const isAuth = sessionStorage.getItem('kalamnesan_admin_authenticated');
-      if (isAuth === 'true') {
-        document.getElementById('adminAuthOverlay').style.display = 'none';
-        document.getElementById('adminProtectedContent').style.display = 'block';
+      const isAuth = sessionStorage.getItem("kalamnesan_admin_authenticated");
+      if (isAuth === "true") {
+        currentSessionRole = sessionStorage.getItem(SESSION_ROLE_KEY) || "OWNER";
+        if (currentSessionRole === "OWNER") {
+          currentSessionPermissions = {
+            can_upload: true, can_edit: true, can_manage_students: true, can_view_results: true, can_delete: true
+          };
+        } else {
+          try {
+            currentSessionPermissions = JSON.parse(sessionStorage.getItem("kn_coworker_perms") || "{}");
+          } catch (e) {}
+        }
+        document.getElementById("adminAuthOverlay").style.display = "none";
+        document.getElementById("adminProtectedContent").style.display = "block";
+        applyRolePermissionsToUI();
         initAdminDashboard();
       } else {
-        document.getElementById('adminAuthOverlay').style.display = 'flex';
-        document.getElementById('adminProtectedContent').style.display = 'none';
+        document.getElementById("adminAuthOverlay").style.display = "flex";
+        document.getElementById("adminProtectedContent").style.display = "none";
       }
     }
 
     function verifyAdminAccess() {
-      const pass = document.getElementById('adminPasswordInput').value.trim();
-      const err = document.getElementById('authErrorMsg');
-      if (pass === ADMIN_SECRET_KEY) {
-        sessionStorage.setItem('kalamnesan_admin_authenticated', 'true');
-        err.classList.add('hidden');
-        document.getElementById('adminAuthOverlay').style.display = 'none';
-        document.getElementById('adminProtectedContent').style.display = 'block';
+      const pass = document.getElementById("adminPasswordInput").value.trim();
+      const err = document.getElementById("authErrorMsg");
+      const ownerPass = getOwnerPassword();
+
+      if (pass === ownerPass) {
+        currentSessionRole = "OWNER";
+        currentSessionPermissions = {
+          can_upload: true, can_edit: true, can_manage_students: true, can_view_results: true, can_delete: true
+        };
+        sessionStorage.setItem("kalamnesan_admin_authenticated", "true");
+        sessionStorage.setItem(SESSION_ROLE_KEY, "OWNER");
+        sessionStorage.setItem(SESSION_USER_KEY, "Owner (M. Ramesh)");
+        err.classList.add("hidden");
+        document.getElementById("adminAuthOverlay").style.display = "none";
+        document.getElementById("adminProtectedContent").style.display = "block";
+        applyRolePermissionsToUI();
         initAdminDashboard();
-      } else {
-        err.classList.remove('hidden');
-        document.getElementById('adminPasswordInput').value = '';
+        return;
       }
+
+      const matchedWorker = getCoWorkers().find(w => w.active !== false && w.password === pass);
+      if (matchedWorker) {
+        currentSessionRole = "COWORKER";
+        currentSessionPermissions = matchedWorker.permissions || {};
+        sessionStorage.setItem("kalamnesan_admin_authenticated", "true");
+        sessionStorage.setItem(SESSION_ROLE_KEY, "COWORKER");
+        sessionStorage.setItem(SESSION_USER_KEY, matchedWorker.name || "Co-Worker");
+        sessionStorage.setItem("kn_coworker_perms", JSON.stringify(currentSessionPermissions));
+        err.classList.add("hidden");
+        document.getElementById("adminAuthOverlay").style.display = "none";
+        document.getElementById("adminProtectedContent").style.display = "block";
+        applyRolePermissionsToUI();
+        initAdminDashboard();
+        return;
+      }
+
+      err.classList.remove("hidden");
+      document.getElementById("adminPasswordInput").value = "";
+    }
+
+    function openChangePasswordModal() {
+      if (currentSessionRole !== "OWNER") {
+        return alert("❌ Owner-க்கு மட்டுமே கடவுச்சொல் மாற்றும் அனுமதி உள்ளது!");
+      }
+      document.getElementById("currentOwnerPass").value = "";
+      document.getElementById("newOwnerPass").value = "";
+      document.getElementById("confirmOwnerPass").value = "";
+      document.getElementById("changePasswordModal").style.display = "flex";
+    }
+
+    function closeChangePasswordModal() {
+      document.getElementById("changePasswordModal").style.display = "none";
+    }
+
+    function handleOwnerPasswordChange(e) {
+      e.preventDefault();
+      if (currentSessionRole !== "OWNER") {
+        return alert("❌ Owner-க்கு மட்டுமே கடவுச்சொல் மாற்றும் அனுமதி உள்ளது!");
+      }
+      const cur = document.getElementById("currentOwnerPass").value.trim();
+      const next = document.getElementById("newOwnerPass").value.trim();
+      const conf = document.getElementById("confirmOwnerPass").value.trim();
+
+      if (cur !== getOwnerPassword()) {
+        return alert("❌ தற்போதைய Owner கடவுச்சொல் தவறானது!");
+      }
+      if (next.length < 4) {
+        return alert("❌ புதிய கடவுச்சொல் குறைந்தது 4 எழுத்துகள் இருக்க வேண்டும்!");
+      }
+      if (next !== conf) {
+        return alert("❌ புதிய கடவுச்சொல்லும் உறுதிப்படுத்தும் கடவுச்சொல்லும் பொருந்தவில்லை!");
+      }
+
+      setOwnerPassword(next);
+      alert("✅ Owner கடவுச்சொல் வெற்றிகரமாக மாற்றப்பட்டது!");
+      closeChangePasswordModal();
+    }
+
+    function addOrUpdateCoWorker() {
+      if (currentSessionRole !== "OWNER") return alert("Owner permission required!");
+      const name = document.getElementById("coWorkerName").value.trim();
+      const pass = document.getElementById("coWorkerPass").value.trim();
+      if (!name || pass.length < 4) {
+        return alert("Co-Worker பெயர் மற்றும் குறைந்தது 4 எழுத்துகள் கொண்ட கடவுச்சொல் உள்ளிடவும்!");
+      }
+
+      const perms = {
+        can_upload: !!document.getElementById("permUpload").checked,
+        can_edit: !!document.getElementById("permEdit").checked,
+        can_manage_students: !!document.getElementById("permStudents").checked,
+        can_view_results: !!document.getElementById("permResults").checked,
+        can_delete: !!document.getElementById("permDelete").checked
+      };
+
+      const list = getCoWorkers();
+      const idx = list.findIndex(w => w.name.toLowerCase() === name.toLowerCase());
+      const item = { id: idx >= 0 ? list[idx].id : String(Date.now()), name, password: pass, active: true, permissions: perms };
+      if (idx >= 0) list[idx] = item; else list.push(item);
+
+      saveCoWorkers(list);
+      document.getElementById("coWorkerName").value = "";
+      document.getElementById("coWorkerPass").value = "";
+      renderCoWorkersTable();
+      alert(`✅ "${name}" Co-Worker அனுமதிகள் சேமிக்கப்பட்டன!`);
+    }
+
+    function renderCoWorkersTable() {
+      const tbody = document.getElementById("coWorkersTable");
+      if (!tbody) return;
+      const list = getCoWorkers();
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Co-workers எதுவும் சேர்க்கப்படவில்லை.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(w => {
+        const p = w.permissions || {};
+        const badges = [
+          p.can_upload ? "Upload" : null,
+          p.can_edit ? "Edit" : null,
+          p.can_manage_students ? "Students" : null,
+          p.can_view_results ? "Results" : null,
+          p.can_delete ? "Delete" : null
+        ].filter(Boolean).join(" • ") || "None";
+
+        return `
+          <tr>
+            <td class="p-3 font-bold text-slate-900">${w.name}</td>
+            <td class="p-3 text-indigo-800 font-semibold">${badges}</td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded font-bold ${w.active !== false ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">
+                ${w.active !== false ? "Active" : "Disabled"}
+              </span>
+            </td>
+            <td class="p-3 text-right space-x-2">
+              <button type="button" onclick="toggleCoWorkerActive('${w.id}')" class="text-amber-700 font-bold hover:underline">
+                ${w.active !== false ? "Disable" : "Enable"}
+              </button>
+              <button type="button" onclick="deleteCoWorker('${w.id}')" class="text-rose-600 font-bold hover:underline">
+                நீக்கு
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function toggleCoWorkerActive(id) {
+      if (currentSessionRole !== "OWNER") return;
+      const list = getCoWorkers().map(w => w.id === id ? { ...w, active: w.active === false } : w);
+      saveCoWorkers(list);
+      renderCoWorkersTable();
+    }
+
+    function deleteCoWorker(id) {
+      if (currentSessionRole !== "OWNER") return;
+      const list = getCoWorkers().filter(w => w.id !== id);
+      saveCoWorkers(list);
+      renderCoWorkersTable();
     }
 
     function adminLogout() {
-      sessionStorage.removeItem('kalamnesan_admin_authenticated');
+      sessionStorage.removeItem("kalamnesan_admin_authenticated");
+      sessionStorage.removeItem(SESSION_ROLE_KEY);
+      sessionStorage.removeItem(SESSION_USER_KEY);
+      sessionStorage.removeItem("kn_coworker_perms");
       window.location.reload();
     }
 
-    document.getElementById('adminPasswordInput')?.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') verifyAdminAccess();
+    document.getElementById("adminPasswordInput")?.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") verifyAdminAccess();
     });
 
-    const SUPABASE_URL = 'https://agymotgpqfghoutettpv.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFneW1vdGdwcWZnaG91dGV0dHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NjA5NzIsImV4cCI6MjEwOTUzNjk3Mn0.KeTw76EwZQimmoPkxzVTWfd0p6WxavLsnhrZCsWmYec';
+    const SUPABASE_URL = "https://agymotgpqfghoutettpv.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFneW1vdGdwcWZnaG91dGV0dHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NjA5NzIsImV4cCI6MjEwOTUzNjk3Mn0.KeTw76EwZQimmoPkxzVTWfd0p6WxavLsnhrZCsWmYec";
     
     let supabaseClient = null;
     let allLoadedExams = [];
     let allPaidStudents = [];
     let cachedResults = [];
 
-    let activeAdminGradeFilter = 'ALL';
-    let activeAdminMediumFilter = 'ALL';
-    let activeAdminMainFilter = 'ALL';
-    let activeAdminSubFilter = 'ALL';
+    let activeAdminGradeFilter = "ALL";
+    let activeAdminMediumFilter = "ALL";
+    let activeAdminMainFilter = "ALL";
+    let activeAdminSubFilter = "ALL";
 
     const SUB_CATEGORY_LABELS = {
-      'BOOK_BACK': { label: '📖 Book Back', bg: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
-      'CREATED': { label: '💡 Created', bg: 'bg-amber-50 text-amber-800 border-amber-200' },
-      'MODEL_PAPER': { label: '📝 Model Paper', bg: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
-      'COMBO': { label: '⚡ Combo', bg: 'bg-purple-50 text-purple-800 border-purple-200' },
-      'UNIT_TEST': { label: '🎯 Unit Test', bg: 'bg-rose-50 text-rose-800 border-rose-200' },
-      'NCERT_LINE': { label: '🔬 NCERT Line', bg: 'bg-teal-50 text-teal-800 border-teal-200' },
-      'PYQ': { label: '⏳ PYQ', bg: 'bg-amber-50 text-amber-900 border-amber-300' },
-      'COMBO_FULL': { label: '🏆 Full Mock', bg: 'bg-indigo-50 text-indigo-900 border-indigo-300' },
-      'CHAPTER_TEST': { label: '📐 Chapter Test', bg: 'bg-sky-50 text-sky-800 border-sky-200' },
-      'PYQ_JEE': { label: '⏳ JEE PYQ', bg: 'bg-orange-50 text-orange-800 border-orange-200' },
-      'MOCK_TEST': { label: '🚀 JEE Mock', bg: 'bg-indigo-50 text-indigo-900 border-indigo-300' },
-      'GENERAL': { label: '📁 General', bg: 'bg-slate-100 text-slate-700 border-slate-200' }
+      "BOOK_BACK": { label: "📖 Book Back", bg: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+      "CREATED": { label: "💡 Created", bg: "bg-amber-50 text-amber-800 border-amber-200" },
+      "MODEL_PAPER": { label: "📝 Model Paper", bg: "bg-indigo-50 text-indigo-800 border-indigo-200" },
+      "COMBO": { label: "⚡ Combo", bg: "bg-purple-50 text-purple-800 border-purple-200" },
+      "UNIT_TEST": { label: "🎯 Unit Test", bg: "bg-rose-50 text-rose-800 border-rose-200" },
+      "NCERT_LINE": { label: "🔬 NCERT Line", bg: "bg-teal-50 text-teal-800 border-teal-200" },
+      "PYQ": { label: "⏳ PYQ", bg: "bg-amber-50 text-amber-900 border-amber-300" },
+      "COMBO_FULL": { label: "🏆 Full Mock", bg: "bg-indigo-50 text-indigo-900 border-indigo-300" },
+      "CHAPTER_TEST": { label: "📐 Chapter Test", bg: "bg-sky-50 text-sky-800 border-sky-200" },
+      "PYQ_JEE": { label: "⏳ JEE PYQ", bg: "bg-orange-50 text-orange-800 border-orange-200" },
+      "MOCK_TEST": { label: "🚀 JEE Mock", bg: "bg-indigo-50 text-indigo-900 border-indigo-300" },
+      "GENERAL": { label: "📁 General", bg: "bg-slate-100 text-slate-700 border-slate-200" }
     };
 
     const SUB_CATEGORIES_DICT = {
       BOARD: [
-        { val: 'BOOK_BACK', label: '📖 Book Back Direct (பாடநூல் வினாக்கள்)' },
-        { val: 'CREATED', label: '💡 Created / Internal (உள் வினாக்கள்)' },
-        { val: 'MODEL_PAPER', label: '📝 Model Question Papers (மாதிரி வினாத்தாள்கள்)' },
-        { val: 'COMBO', label: '⚡ Combo / Revision Tests (திருப்புதல் தேர்வுகள்)' }
+        { val: "BOOK_BACK", label: "📖 Book Back Direct (பாடநூல் வினாக்கள்)" },
+        { val: "CREATED", label: "💡 Created / Internal (உள் வினாக்கள்)" },
+        { val: "MODEL_PAPER", label: "📝 Model Question Papers (மாதிரி வினாத்தாள்கள்)" },
+        { val: "COMBO", label: "⚡ Combo / Revision Tests (திருப்புதல் தேர்வுகள்)" }
       ],
       NEET: [
-        { val: 'UNIT_TEST', label: '🎯 Unit Wise Tests / Bridge Course' },
-        { val: 'NCERT_LINE', label: '🔬 NCERT Line-by-Line / Foundation' },
-        { val: 'PYQ', label: '⏳ Previous Year Questions (PYQ)' },
-        { val: 'COMBO_FULL', label: '🏆 Combo & Full Syllabus Mock' }
+        { val: "UNIT_TEST", label: "🎯 Unit Wise Tests / Bridge Course" },
+        { val: "NCERT_LINE", label: "🔬 NCERT Line-by-Line / Foundation" },
+        { val: "PYQ", label: "⏳ Previous Year Questions (PYQ)" },
+        { val: "COMBO_FULL", label: "🏆 Combo & Full Syllabus Mock" }
       ],
       JEE: [
-        { val: 'CHAPTER_TEST', label: '📐 Chapter Tests / Bridge Course' },
-        { val: 'PYQ_JEE', label: '⏳ JEE Main PYQ' },
-        { val: 'MOCK_TEST', label: '🚀 Full Length Mock Tests' }
+        { val: "CHAPTER_TEST", label: "📐 Chapter Tests / Bridge Course" },
+        { val: "PYQ_JEE", label: "⏳ JEE Main PYQ" },
+        { val: "MOCK_TEST", label: "🚀 Full Length Mock Tests" }
       ]
     };
 
@@ -628,30 +999,30 @@
     }
 
     function updateSubCategoryOptions() {
-      const type = document.getElementById('examType').value;
-      const subSelect = document.getElementById('examSubCategory');
+      const type = document.getElementById("examType").value;
+      const subSelect = document.getElementById("examSubCategory");
       if (!subSelect) return;
       const options = SUB_CATEGORIES_DICT[type] || SUB_CATEGORIES_DICT.BOARD;
-      subSelect.innerHTML = options.map(opt => `<option value="${opt.val}">${opt.label}</option>`).join('');
+      subSelect.innerHTML = options.map(opt => `<option value="${opt.val}">${opt.label}</option>`).join("");
     }
 
-    function updateEditSubCategoryOptions(selectedVal = '') {
-      const type = document.getElementById('editExamType').value;
-      const subSelect = document.getElementById('editExamSubCategory');
+    function updateEditSubCategoryOptions(selectedVal = "") {
+      const type = document.getElementById("editExamType").value;
+      const subSelect = document.getElementById("editExamSubCategory");
       if (!subSelect) return;
       const options = SUB_CATEGORIES_DICT[type] || SUB_CATEGORIES_DICT.BOARD;
-      subSelect.innerHTML = options.map(opt => `<option value="${opt.val}">${opt.label}</option>`).join('');
+      subSelect.innerHTML = options.map(opt => `<option value="${opt.val}">${opt.label}</option>`).join("");
       if (selectedVal) subSelect.value = selectedVal;
     }
 
     function updateStudentBatchOptions() {
-      const target = document.getElementById('newStudentTarget')?.value || 'BOARD';
-      const grade = document.getElementById('newStudentGrade')?.value || '12';
-      const batchSelect = document.getElementById('newStudentBatch');
-      const label = document.getElementById('batchSectionLabel');
+      const target = document.getElementById("newStudentTarget")?.value || "BOARD";
+      const grade = document.getElementById("newStudentGrade")?.value || "12";
+      const batchSelect = document.getElementById("newStudentBatch");
+      const label = document.getElementById("batchSectionLabel");
       if (!batchSelect) return;
 
-      if (target === 'BOARD') {
+      if (target === "BOARD") {
         if (label) label.innerText = `வகுப்பு ${grade} பிரிவு (Section) *:`;
         batchSelect.innerHTML = `
           <option value="${grade}-A">${grade}-A Section</option>
@@ -660,7 +1031,7 @@
           <option value="${grade}-D">${grade}-D Section</option>
           <option value="${grade}-ALL">அனைத்துப் பிரிவுகளும் (${grade})</option>
         `;
-      } else if (target === 'NEET' || target === 'JEE') {
+      } else if (target === "NEET" || target === "JEE") {
         if (label) label.innerText = `${target} தொகுதி (Batch) *:`;
         batchSelect.innerHTML = `
           <option value="Batch 1">Batch 1 (Foundation / Regular)</option>
@@ -677,12 +1048,15 @@
       updateSubCategoryOptions();
       updateStudentBatchOptions();
       updateAdminSubFilterButtons();
+      if (currentSessionRole === "OWNER") {
+        renderCoWorkersTable();
+      }
       await loadExamsList();
       await loadPaidStudents();
       await loadSubmissionsList();
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener("DOMContentLoaded", () => {
       checkAdminSession();
     });
 
@@ -690,9 +1064,9 @@
       const file = event.target.files[0];
       if (!file) return;
 
-      if (!file.name.endsWith('.json')) {
+      if (!file.name.endsWith(".json")) {
         alert("தயவுசெய்து .json கோப்பை மட்டும் தேர்ந்தெடுக்கவும்!");
-        event.target.value = '';
+        event.target.value = "";
         return;
       }
 
@@ -703,11 +1077,11 @@
           const parsed = JSON.parse(content);
           if (!Array.isArray(parsed)) throw new Error("JSON ஒரு Array [...] வடிவில் இருக்க வேண்டும்!");
           
-          document.getElementById('examQuestionsJson').value = JSON.stringify(parsed, null, 2);
+          document.getElementById("examQuestionsJson").value = JSON.stringify(parsed, null, 2);
           alert(`✅ "${file.name}" வெற்றிகரமாகப் பெறப்பட்டது! மொத்தம் ${parsed.length} வினாக்கள் உள்ளன.`);
         } catch (err) {
           alert("❌ JSON அமைப்பில் பிழை: " + err.message);
-          event.target.value = '';
+          event.target.value = "";
         }
       };
 
@@ -716,16 +1090,22 @@
 
     async function handleExamUpload(e) {
       e.preventDefault();
-      const btn = document.getElementById('uploadBtn');
-      const titleInput = document.getElementById('examTitle').value.trim();
-      const type = document.getElementById('examType').value;
-      const subCategory = document.getElementById('examSubCategory')?.value || 'BOOK_BACK';
-      const grade = parseInt(document.getElementById('examGrade').value);
-      const medium = document.getElementById('examMedium').value;
-      const duration = parseInt(document.getElementById('examDuration').value) || 15;
-      const pos = parseFloat(document.getElementById('posMarks').value) || 1;
-      const neg = parseFloat(document.getElementById('negMarks').value) || 0;
-      const jsonRaw = document.getElementById('examQuestionsJson').value.trim();
+      if (currentSessionRole !== "OWNER" && !currentSessionPermissions.can_upload) {
+        return alert("❌ உங்களுக்குத் தேர்வு பதிவேற்றும் அனுமதி இல்லை!");
+      }
+
+      const btn = document.getElementById("uploadBtn");
+      const titleInput = document.getElementById("examTitle").value.trim();
+      const type = document.getElementById("examType").value;
+      const subCategory = document.getElementById("examSubCategory")?.value || "BOOK_BACK";
+      const preVideoUrl = document.getElementById("examPreVideoUrl")?.value.trim() || null;
+      const isDemo = !!document.getElementById("examIsDemo")?.checked;
+      const grade = parseInt(document.getElementById("examGrade").value);
+      const medium = document.getElementById("examMedium").value;
+      const duration = parseInt(document.getElementById("examDuration").value) || 15;
+      const pos = parseFloat(document.getElementById("posMarks").value) || 1;
+      const neg = parseFloat(document.getElementById("negMarks").value) || 0;
+      const jsonRaw = document.getElementById("examQuestionsJson").value.trim();
 
       let questionsArr = [];
       try {
@@ -740,19 +1120,21 @@
 
       const safeTitle = (titleInput || `CLASS ${grade} - PHYSICS TEST`).trim();
 
-      const { error } = await supabaseClient.from('exams').insert([{
+      const { error } = await supabaseClient.from("exams").insert([{
         title: safeTitle,
         exam_title: safeTitle,
         chapter_name: subCategory,
         sub_category: subCategory,
-        exam_type: type || 'BOARD',
+        exam_type: type || "BOARD",
         grade: grade || 12,
-        medium: medium || 'TAMIL',
+        medium: medium || "TAMIL",
         duration_minutes: duration,
         positive_marks: pos,
         negative_marks: neg,
         total_marks: questionsArr.length * pos,
         questions: questionsArr,
+        is_demo: isDemo,
+        pre_test_video_url: preVideoUrl,
         is_published: true
       }]);
 
@@ -763,19 +1145,19 @@
         alert("பதிவேற்றுவதில் பிழை: " + error.message);
       } else {
         alert("தேர்வு வெற்றிகரமாக வெளியிடப்பட்டது!");
-        document.getElementById('uploadForm').reset();
+        document.getElementById("uploadForm").reset();
         updateSubCategoryOptions();
         await loadExamsList();
       }
     }
 
     async function loadExamsList() {
-      const tbody = document.getElementById('examsTable');
-      const { data, error } = await supabaseClient.from('exams').select('*').order('created_at', { ascending: false });
+      const tbody = document.getElementById("examsTable");
+      const { data, error } = await supabaseClient.from("exams").select("*").order("created_at", { ascending: false });
 
       if (error || !data || data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">தேர்வுகள் எதுவும் இல்லை.</td></tr>';
-        document.getElementById('examsCountBadge').innerText = '0 தேர்வுகள்';
+        document.getElementById("examsCountBadge").innerText = "0 தேர்வுகள்";
         allLoadedExams = [];
         return;
       }
@@ -786,7 +1168,7 @@
 
     function setAdminGradeFilter(grade) {
       activeAdminGradeFilter = grade;
-      ['ALL', '12', '11', '10'].forEach(g => {
+      ["ALL", "12", "11", "10"].forEach(g => {
         const btn = document.getElementById(`gradeFilterBtn_${g}`);
         if (!btn) return;
         btn.className = (g === grade)
@@ -798,7 +1180,7 @@
 
     function setAdminMediumFilter(med) {
       activeAdminMediumFilter = med;
-      ['ALL', 'TAMIL', 'ENGLISH'].forEach(m => {
+      ["ALL", "TAMIL", "ENGLISH"].forEach(m => {
         const btn = document.getElementById(`medFilterBtn_${m}`);
         if (!btn) return;
         btn.className = (m === med)
@@ -810,8 +1192,8 @@
 
     function setAdminMainFilter(type) {
       activeAdminMainFilter = type;
-      activeAdminSubFilter = 'ALL';
-      ['ALL', 'BOARD', 'NEET', 'JEE'].forEach(t => {
+      activeAdminSubFilter = "ALL";
+      ["ALL", "BOARD", "NEET", "JEE"].forEach(t => {
         const btn = document.getElementById(`filterBtn_${t}`);
         if (!btn) return;
         btn.className = (t === type)
@@ -823,37 +1205,37 @@
     }
 
     function updateAdminSubFilterButtons() {
-      const container = document.getElementById('subCategoryFilterButtons');
+      const container = document.getElementById("subCategoryFilterButtons");
       if (!container) return;
 
       const subListMap = {
         BOARD: [
-          { key: 'BOOK_BACK', name: '📖 Book Back' },
-          { key: 'CREATED', name: '💡 Created' },
-          { key: 'MODEL_PAPER', name: '📝 Model Paper' },
-          { key: 'COMBO', name: '⚡ Combo' }
+          { key: "BOOK_BACK", name: "📖 Book Back" },
+          { key: "CREATED", name: "💡 Created" },
+          { key: "MODEL_PAPER", name: "📝 Model Paper" },
+          { key: "COMBO", name: "⚡ Combo" }
         ],
         NEET: [
-          { key: 'UNIT_TEST', name: '🎯 Unit Test / Bridge' },
-          { key: 'NCERT_LINE', name: '🔬 NCERT Line' },
-          { key: 'PYQ', name: '⏳ PYQ' },
-          { key: 'COMBO_FULL', name: '🏆 Full Mock' }
+          { key: "UNIT_TEST", name: "🎯 Unit Test / Bridge" },
+          { key: "NCERT_LINE", name: "🔬 NCERT Line" },
+          { key: "PYQ", name: "⏳ PYQ" },
+          { key: "COMBO_FULL", name: "🏆 Full Mock" }
         ],
         JEE: [
-          { key: 'CHAPTER_TEST', name: '📐 Chapter Test / Bridge' },
-          { key: 'PYQ_JEE', name: '⏳ JEE PYQ' },
-          { key: 'MOCK_TEST', name: '🚀 Full Mock' }
+          { key: "CHAPTER_TEST", name: "📐 Chapter Test / Bridge" },
+          { key: "PYQ_JEE", name: "⏳ JEE PYQ" },
+          { key: "MOCK_TEST", name: "🚀 Full Mock" }
         ]
       };
 
       let list = [];
-      if (activeAdminMainFilter === 'ALL') {
+      if (activeAdminMainFilter === "ALL") {
         list = [
-          { key: 'BOOK_BACK', name: '📖 Book Back' },
-          { key: 'CREATED', name: '💡 Created' },
-          { key: 'UNIT_TEST', name: '🎯 Unit Test' },
-          { key: 'PYQ', name: '⏳ PYQ' },
-          { key: 'MODEL_PAPER', name: '📝 Model Paper' }
+          { key: "BOOK_BACK", name: "📖 Book Back" },
+          { key: "CREATED", name: "💡 Created" },
+          { key: "UNIT_TEST", name: "🎯 Unit Test" },
+          { key: "PYQ", name: "⏳ PYQ" },
+          { key: "MODEL_PAPER", name: "📝 Model Paper" }
         ];
       } else {
         list = subListMap[activeAdminMainFilter] || [];
@@ -884,24 +1266,24 @@
     }
 
     function filterAdminExamsList() {
-      const query = (document.getElementById('adminExamSearchInput')?.value || '').toLowerCase().trim();
+      const query = (document.getElementById("adminExamSearchInput")?.value || "").toLowerCase().trim();
 
       const filtered = allLoadedExams.filter(exam => {
-        const title = (exam.exam_title || exam.title || '').toLowerCase();
-        const type = (exam.exam_type || 'BOARD').toUpperCase();
-        let sub = (exam.sub_category || exam.chapter_name || 'GENERAL').toUpperCase();
-        const grade = String(exam.grade || '');
-        const medium = (exam.medium || 'TAMIL').toUpperCase();
+        const title = (exam.exam_title || exam.title || "").toLowerCase();
+        const type = (exam.exam_type || "BOARD").toUpperCase();
+        let sub = (exam.sub_category || exam.chapter_name || "GENERAL").toUpperCase();
+        const grade = String(exam.grade || "");
+        const medium = (exam.medium || "TAMIL").toUpperCase();
 
-        if (title.includes('book back') || title.includes('பாடநூல்')) sub = 'BOOK_BACK';
-        else if (title.includes('created') || title.includes('உள் வினா')) sub = 'CREATED';
+        if (title.includes("book back") || title.includes("பாடநூல்")) sub = "BOOK_BACK";
+        else if (title.includes("created") || title.includes("உள் வினா")) sub = "CREATED";
 
-        const matchGrade = (activeAdminGradeFilter === 'ALL') || (grade === activeAdminGradeFilter);
-        const matchMedium = (activeAdminMediumFilter === 'ALL') || (medium === activeAdminMediumFilter);
-        let matchMain = (activeAdminMainFilter === 'ALL') || (type === activeAdminMainFilter);
+        const matchGrade = (activeAdminGradeFilter === "ALL") || (grade === activeAdminGradeFilter);
+        const matchMedium = (activeAdminMediumFilter === "ALL") || (medium === activeAdminMediumFilter);
+        let matchMain = (activeAdminMainFilter === "ALL") || (type === activeAdminMainFilter);
         if (!matchMain && title.includes(activeAdminMainFilter.toLowerCase())) matchMain = true;
 
-        let matchSub = (activeAdminSubFilter === 'ALL') || (sub === activeAdminSubFilter);
+        let matchSub = (activeAdminSubFilter === "ALL") || (sub === activeAdminSubFilter);
         if (!matchSub && title.includes(activeAdminSubFilter.toLowerCase())) matchSub = true;
 
         const matchQuery = !query || title.includes(query) || type.toLowerCase().includes(query) || sub.toLowerCase().includes(query) || grade.includes(query) || medium.toLowerCase().includes(query);
@@ -913,10 +1295,10 @@
     }
 
     function renderAdminExamsTable(list) {
-      const tbody = document.getElementById('examsTable');
+      const tbody = document.getElementById("examsTable");
       if (!tbody) return;
 
-      document.getElementById('examsCountBadge').innerText = `${list.length} தேர்வுகள்`;
+      document.getElementById("examsCountBadge").innerText = `${list.length} தேர்வுகள்`;
 
       if (list.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400 font-semibold">தேடலுக்குப் பொருத்தமான தேர்வுகள் எதுவும் இல்லை.</td></tr>';
@@ -926,22 +1308,27 @@
       tbody.innerHTML = list.map(exam => {
         let qCount = 0;
         try {
-          qCount = (typeof exam.questions === 'string') ? JSON.parse(exam.questions).length : (exam.questions?.length || 0);
+          qCount = (typeof exam.questions === "string") ? JSON.parse(exam.questions).length : (exam.questions?.length || 0);
         } catch(e) {}
 
-        const dTitle = exam.exam_title || exam.title || 'தலைப்பற்ற தேர்வு';
-        let rawSub = (exam.sub_category || exam.chapter_name || 'GENERAL').toUpperCase();
-        if (dTitle.toLowerCase().includes('book back')) rawSub = 'BOOK_BACK';
+        const dTitle = exam.exam_title || exam.title || "தலைப்பற்ற தேர்வு";
+        let rawSub = (exam.sub_category || exam.chapter_name || "GENERAL").toUpperCase();
+        if (dTitle.toLowerCase().includes("book back")) rawSub = "BOOK_BACK";
 
-        const subInfo = SUB_CATEGORY_LABELS[rawSub] || { label: `📁 ${rawSub}`, bg: 'bg-slate-100 text-slate-700 border-slate-200' };
-        const isEnglish = (exam.medium === 'ENGLISH');
+        const subInfo = SUB_CATEGORY_LABELS[rawSub] || { label: `📁 ${rawSub}`, bg: "bg-slate-100 text-slate-700 border-slate-200" };
+        const isEnglish = (exam.medium === "ENGLISH");
+        const canEdit = currentSessionRole === "OWNER" || !!currentSessionPermissions.can_edit;
+        const canDelete = currentSessionRole === "OWNER" || !!currentSessionPermissions.can_delete;
 
         return `
           <tr class="hover:bg-slate-50 transition">
-            <td class="p-3 font-semibold text-slate-900">${dTitle}</td>
+            <td class="p-3 font-semibold text-slate-900">
+              ${exam.is_demo ? '<span class="mr-1 px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-extrabold">DEMO</span>' : ''}
+              ${dTitle}
+            </td>
             <td class="p-3">
               <span class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
-                ${exam.exam_type || 'BOARD'}
+                ${exam.exam_type || "BOARD"}
               </span>
             </td>
             <td class="p-3">
@@ -957,60 +1344,67 @@
             </td>
             <td class="p-3 font-semibold text-slate-600">${qCount} வினாக்கள்</td>
             <td class="p-3 text-right space-x-1.5 whitespace-nowrap">
-              <button onclick="openEditExamModal('${exam.id}')" class="text-amber-800 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-lg font-bold text-xs transition border border-amber-200">
-                ✏️ திருத்து
-              </button>
+              ${canEdit ? `<button onclick="openEditExamModal('${exam.id}')" class="text-amber-800 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-lg font-bold text-xs transition border border-amber-200">✏️ திருத்து</button>` : ''}
               <button onclick="previewExamQuestions('${exam.id}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg font-bold text-xs transition">
                 👁️ பார்
               </button>
               <button onclick="backupExamQuestionsJson('${exam.id}')" class="text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg font-bold text-xs transition">
                 💾 பேக்கப்
               </button>
-              <button onclick="deleteExam('${exam.id}')" class="text-rose-600 hover:underline font-bold text-xs px-1">
-                நீக்கு
-              </button>
+              ${canDelete ? `<button onclick="deleteExam('${exam.id}')" class="text-rose-600 hover:underline font-bold text-xs px-1">நீக்கு</button>` : ''}
             </td>
           </tr>
         `;
-      }).join('');
+      }).join("");
     }
 
     function openEditExamModal(examId) {
+      if (currentSessionRole !== "OWNER" && !currentSessionPermissions.can_edit) {
+        return alert("❌ உங்களுக்குத் தேர்வு திருத்தும் அனுமதி இல்லை!");
+      }
       const exam = allLoadedExams.find(e => e.id === examId);
       if (!exam) return alert("தேர்வு விவரங்கள் கிடைக்கவில்லை!");
 
-      document.getElementById('editExamId').value = exam.id;
-      document.getElementById('editExamTitle').value = exam.exam_title || exam.title || '';
-      document.getElementById('editExamType').value = (exam.exam_type || 'BOARD').toUpperCase();
+      document.getElementById("editExamId").value = exam.id;
+      document.getElementById("editExamTitle").value = exam.exam_title || exam.title || "";
+      document.getElementById("editExamType").value = (exam.exam_type || "BOARD").toUpperCase();
       
-      const currentSub = (exam.sub_category || exam.chapter_name || 'BOOK_BACK').toUpperCase();
+      const currentSub = (exam.sub_category || exam.chapter_name || "BOOK_BACK").toUpperCase();
       updateEditSubCategoryOptions(currentSub);
 
-      document.getElementById('editExamGrade').value = String(exam.grade || 12);
-      document.getElementById('editExamMedium').value = (exam.medium || 'TAMIL').toUpperCase();
-      document.getElementById('editExamDuration').value = exam.duration_minutes || 15;
-      document.getElementById('editExamPos').value = (exam.positive_marks != null) ? exam.positive_marks : 1;
-      document.getElementById('editExamNeg').value = (exam.negative_marks != null) ? exam.negative_marks : 0;
+      document.getElementById("editExamGrade").value = String(exam.grade || 12);
+      document.getElementById("editExamMedium").value = (exam.medium || "TAMIL").toUpperCase();
+      document.getElementById("editExamPreVideoUrl").value = exam.pre_test_video_url || "";
+      document.getElementById("editExamIsDemo").checked = !!exam.is_demo;
+      document.getElementById("editExamDuration").value = exam.duration_minutes || 15;
+      document.getElementById("editExamPos").value = (exam.positive_marks != null) ? exam.positive_marks : 1;
+      document.getElementById("editExamNeg").value = (exam.negative_marks != null) ? exam.negative_marks : 0;
 
-      document.getElementById('editExamModal').style.display = 'flex';
+      document.getElementById("editExamModal").style.display = "flex";
     }
 
     function closeEditExamModal() {
-      document.getElementById('editExamModal').style.display = 'none';
+      document.getElementById("editExamModal").style.display = "none";
     }
 
     async function handleSaveExamEdit(e) {
       e.preventDefault();
-      const saveBtn = document.getElementById('saveEditBtn');
-      const examId = document.getElementById('editExamId').value;
-      const newTitle = document.getElementById('editExamTitle').value.trim();
-      const newType = document.getElementById('editExamType').value;
-      const newSub = document.getElementById('editExamSubCategory').value;
-      const newGrade = parseInt(document.getElementById('editExamGrade').value);
-      const newMedium = document.getElementById('editExamMedium').value;
-      const newDuration = parseInt(document.getElementById('editExamDuration').value) || 15;
-      const newPos = parseFloat(document.getElementById('editExamPos').value) || 1;
-      const newNeg = parseFloat(document.getElementById('editExamNeg').value) || 0;
+      if (currentSessionRole !== "OWNER" && !currentSessionPermissions.can_edit) {
+        return alert("❌ உங்களுக்குத் தேர்வு திருத்தும் அனுமதி இல்லை!");
+      }
+
+      const saveBtn = document.getElementById("saveEditBtn");
+      const examId = document.getElementById("editExamId").value;
+      const newTitle = document.getElementById("editExamTitle").value.trim();
+      const newType = document.getElementById("editExamType").value;
+      const newSub = document.getElementById("editExamSubCategory").value;
+      const newGrade = parseInt(document.getElementById("editExamGrade").value);
+      const newMedium = document.getElementById("editExamMedium").value;
+      const newVideo = document.getElementById("editExamPreVideoUrl").value.trim() || null;
+      const newDemo = !!document.getElementById("editExamIsDemo").checked;
+      const newDuration = parseInt(document.getElementById("editExamDuration").value) || 15;
+      const newPos = parseFloat(document.getElementById("editExamPos").value) || 1;
+      const newNeg = parseFloat(document.getElementById("editExamNeg").value) || 0;
 
       if (!newTitle) return alert("தேர்வின் தலைப்பை உள்ளிடவும்!");
 
@@ -1018,7 +1412,7 @@
       saveBtn.innerText = "சேமிக்கப்படுகிறது...";
 
       const { error } = await supabaseClient
-        .from('exams')
+        .from("exams")
         .update({
           title: newTitle,
           exam_title: newTitle,
@@ -1027,11 +1421,13 @@
           chapter_name: newSub,
           grade: newGrade,
           medium: newMedium,
+          pre_test_video_url: newVideo,
+          is_demo: newDemo,
           duration_minutes: newDuration,
           positive_marks: newPos,
           negative_marks: newNeg
         })
-        .eq('id', examId);
+        .eq("id", examId);
 
       saveBtn.disabled = false;
       saveBtn.innerText = "💾 சேமி (Save Changes)";
@@ -1046,12 +1442,16 @@
     }
 
     async function addPaidStudent() {
-      const name = document.getElementById('newStudentName').value.trim();
-      const phone = document.getElementById('newStudentPhone').value.trim();
-      const target = document.getElementById('newStudentTarget').value;
-      const grade = parseInt(document.getElementById('newStudentGrade').value);
-      const medium = document.getElementById('newStudentMedium').value;
-      const sectionBatch = document.getElementById('newStudentBatch')?.value || 'General';
+      if (currentSessionRole !== "OWNER" && !currentSessionPermissions.can_manage_students) {
+        return alert("❌ உங்களுக்கு மாணவர் அனுமதி வழங்கும் அதிகாரம் இல்லை!");
+      }
+
+      const name = document.getElementById("newStudentName").value.trim();
+      const phone = document.getElementById("newStudentPhone").value.trim();
+      const target = document.getElementById("newStudentTarget").value;
+      const grade = parseInt(document.getElementById("newStudentGrade").value);
+      const medium = document.getElementById("newStudentMedium").value;
+      const sectionBatch = document.getElementById("newStudentBatch")?.value || "General";
 
       if (!name || phone.length !== 10 || isNaN(phone)) {
         return alert("சரியான மாணவர் பெயர் மற்றும் 10 இலக்க மொபைல் எண்ணை உள்ளிடவும்!");
@@ -1059,7 +1459,7 @@
 
       const formattedTarget = `${target} [${sectionBatch}]`;
 
-      const { error } = await supabaseClient.from('paid_students').insert([{
+      const { error } = await supabaseClient.from("paid_students").insert([{
         student_name: name,
         phone_number: phone,
         target_exam: formattedTarget,
@@ -1070,20 +1470,20 @@
       if (error) {
         alert("சேர்ப்பதில் பிழை: " + error.message);
       } else {
-        alert(`✅ "${name}" வெற்றிகரமாக அனுமதிக்கப்பட்டார்!\nபிரிவு: ${formattedTarget} | ${medium === 'TAMIL' ? 'தமிழ் வழி' : 'English Medium'}`);
-        document.getElementById('newStudentName').value = '';
-        document.getElementById('newStudentPhone').value = '';
+        alert(`✅ "${name}" வெற்றிகரமாக அனுமதிக்கப்பட்டார்!\nபிரிவு: ${formattedTarget} | ${medium === "TAMIL" ? "தமிழ் வழி" : "English Medium"}`);
+        document.getElementById("newStudentName").value = "";
+        document.getElementById("newStudentPhone").value = "";
         await loadPaidStudents();
       }
     }
 
     async function loadPaidStudents() {
-      const tbody = document.getElementById('paidStudentsTable');
-      const { data, error } = await supabaseClient.from('paid_students').select('*').order('created_at', { ascending: false });
+      const tbody = document.getElementById("paidStudentsTable");
+      const { data, error } = await supabaseClient.from("paid_students").select("*").order("created_at", { ascending: false });
 
       if (error || !data || data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-semibold">அனுமதிக்கப்பட்ட மாணவர்கள் யாரும் இல்லை.</td></tr>';
-        document.getElementById('studentCountBadge').innerText = '0 மாணவர்கள்';
+        document.getElementById("studentCountBadge").innerText = "0 மாணவர்கள்";
         allPaidStudents = [];
         return;
       }
@@ -1093,18 +1493,18 @@
     }
 
     function filterPaidStudentsList() {
-      const query = (document.getElementById('paidStudentSearchInput')?.value || '').toLowerCase().trim();
+      const query = (document.getElementById("paidStudentSearchInput")?.value || "").toLowerCase().trim();
       if (!query) {
         renderPaidStudentsTable(allPaidStudents);
         return;
       }
 
       const filtered = allPaidStudents.filter(s => {
-        const name = (s.student_name || '').toLowerCase();
-        const phone = (s.phone_number || '').toLowerCase();
-        const target = (s.target_exam || '').toLowerCase();
-        const grade = String(s.grade || '');
-        const medium = (s.medium || '').toLowerCase();
+        const name = (s.student_name || "").toLowerCase();
+        const phone = (s.phone_number || "").toLowerCase();
+        const target = (s.target_exam || "").toLowerCase();
+        const grade = String(s.grade || "");
+        const medium = (s.medium || "").toLowerCase();
         return name.includes(query) || phone.includes(query) || target.includes(query) || grade.includes(query) || medium.includes(query);
       });
 
@@ -1112,20 +1512,22 @@
     }
 
     function renderPaidStudentsTable(list) {
-      const tbody = document.getElementById('paidStudentsTable');
+      const tbody = document.getElementById("paidStudentsTable");
       if (!tbody) return;
 
-      document.getElementById('studentCountBadge').innerText = `${list.length} மாணவர்கள்`;
+      document.getElementById("studentCountBadge").innerText = `${list.length} மாணவர்கள்`;
 
       if (list.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-semibold">தேடலுக்குப் பொருத்தமான மாணவர்கள் இல்லை.</td></tr>';
         return;
       }
 
+      const canManageStudents = currentSessionRole === "OWNER" || !!currentSessionPermissions.can_manage_students;
+
       tbody.innerHTML = list.map(s => {
-        const cTarget = s.target_exam || 'ALL';
-        const cGrade = (s.grade && s.grade !== 0) ? `Class ${s.grade}` : 'All Classes';
-        const isEnglish = (s.medium === 'ENGLISH');
+        const cTarget = s.target_exam || "ALL";
+        const cGrade = (s.grade && s.grade !== 0) ? `Class ${s.grade}` : "All Classes";
+        const isEnglish = (s.medium === "ENGLISH");
 
         return `
           <tr class="hover:bg-slate-50 transition">
@@ -1144,20 +1546,21 @@
                 ? '<span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold">🇬🇧 English</span>' 
                 : '<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-bold">🇮🇳 தமிழ் வழி</span>'}
             </td>
-            <td class="p-3 text-slate-500">${new Date(s.created_at).toLocaleDateString('ta-IN')}</td>
+            <td class="p-3 text-slate-500">${new Date(s.created_at).toLocaleDateString("ta-IN")}</td>
             <td class="p-3 text-right">
-              <button onclick="removePaidStudent('${s.id}', '${s.student_name}')" class="text-rose-600 hover:underline font-bold text-xs">
-                நீக்கு
-              </button>
+              ${canManageStudents ? `<button onclick="removePaidStudent('${s.id}', '${s.student_name}')" class="text-rose-600 hover:underline font-bold text-xs">நீக்கு</button>` : '<span class="text-slate-400 text-[11px]">View only</span>'}
             </td>
           </tr>
         `;
-      }).join('');
+      }).join("");
     }
 
     async function removePaidStudent(id, name) {
+      if (currentSessionRole !== "OWNER" && !currentSessionPermissions.can_manage_students) {
+        return alert("❌ உங்களுக்கு மாணவர் அனுமதி நீக்கும் அதிகாரம் இல்லை!");
+      }
       if (confirm(`"${name}" அவர்களின் தேர்வு அனுமதியை ரத்து செய்யவா?`)) {
-        await supabaseClient.from('paid_students').delete().eq('id', id);
+        await supabaseClient.from("paid_students").delete().eq("id", id);
         await loadPaidStudents();
       }
     }
@@ -1168,21 +1571,21 @@
 
       let qList = [];
       try {
-        if (typeof exam.questions === 'string') qList = JSON.parse(exam.questions);
+        if (typeof exam.questions === "string") qList = JSON.parse(exam.questions);
         else if (Array.isArray(exam.questions)) qList = exam.questions;
         else if (exam.questions?.questions) qList = exam.questions.questions;
       } catch(e) {}
 
-      const isEnglish = (exam.medium === 'ENGLISH');
-      document.getElementById('previewTitle').innerText = exam.exam_title || exam.title;
-      document.getElementById('previewSubtitle').innerText = `${exam.exam_type || 'EXAM'} | Class ${exam.grade || 12} | ${exam.medium || 'TAMIL'} | ${qList.length} வினாக்கள்`;
+      const isEnglish = (exam.medium === "ENGLISH");
+      document.getElementById("previewTitle").innerText = exam.exam_title || exam.title;
+      document.getElementById("previewSubtitle").innerText = `${exam.exam_type || "EXAM"} | Class ${exam.grade || 12} | ${exam.medium || "TAMIL"} | ${qList.length} வினாக்கள்`;
 
-      const container = document.getElementById('previewQuestionsList');
-      const optionLetters = ['A', 'B', 'C', 'D'];
+      const container = document.getElementById("previewQuestionsList");
+      const optionLetters = ["A", "B", "C", "D"];
 
       if (qList.length === 0) {
         container.innerHTML = '<div class="p-6 text-center text-slate-400">வினாக்கள் எதுவும் இல்லை!</div>';
-        document.getElementById('previewModal').style.display = 'flex';
+        document.getElementById("previewModal").style.display = "flex";
         return;
       }
 
@@ -1197,31 +1600,31 @@
 
         let options = [];
         if (Array.isArray(rawOptions)) options = rawOptions;
-        else if (rawOptions && typeof rawOptions === 'object') options = Object.values(rawOptions);
+        else if (rawOptions && typeof rawOptions === "object") options = Object.values(rawOptions);
 
         let correct = (q.correct_answer !== undefined) ? q.correct_answer : 
                      ((q.ans !== undefined) ? q.ans : 
                      ((q.correct !== undefined) ? q.correct : q.correct_option));
         
-        if (typeof correct === 'string') {
-          const map = { 'A':0, 'B':1, 'C':2, 'D':3, 'a':0, 'b':1, 'c':2, 'd':3 };
+        if (typeof correct === "string") {
+          const map = { "A":0, "B":1, "C":2, "D":3, "a":0, "b":1, "c":2, "d":3 };
           correct = map[correct.trim()] !== undefined ? map[correct.trim()] : parseInt(correct);
         }
 
         const img = q.image_base64 || q.image || q.img || null;
-        let imageHtml = img ? `<div class="my-2 text-center bg-white p-2 rounded-xl border border-slate-300 inline-block shadow-sm"><img src="${img}" class="max-h-48 mx-auto object-contain rounded-lg"></div>` : '';
-        const exp = (isEnglish ? (q.explanation_en || q.exp_en) : (q.explanation_ta || q.exp_ta)) || q.exp || q.explanation || '';
+        let imageHtml = img ? `<div class="my-2 text-center bg-white p-2 rounded-xl border border-slate-300 inline-block shadow-sm"><img src="${img}" class="max-h-48 mx-auto object-contain rounded-lg"></div>` : "";
+        const exp = (isEnglish ? (q.explanation_en || q.exp_en) : (q.explanation_ta || q.exp_ta)) || q.exp || q.explanation || "";
 
         const optionsHtml = options.map((opt, optIdx) => {
           const isCorrect = (parseInt(correct) === optIdx);
           return `
-            <div class="p-2.5 rounded-xl border ${isCorrect ? 'border-emerald-500 bg-emerald-50 font-bold text-emerald-950' : 'border-slate-200 bg-white text-slate-700'} flex items-start gap-2 text-xs md:text-sm">
+            <div class="p-2.5 rounded-xl border ${isCorrect ? "border-emerald-500 bg-emerald-50 font-bold text-emerald-950" : "border-slate-200 bg-white text-slate-700"} flex items-start gap-2 text-xs md:text-sm">
               <span>${optionLetters[optIdx]})</span>
               <span>${opt}</span>
-              ${isCorrect ? '<span class="ml-auto text-xs text-emerald-700 font-bold shrink-0">✓ Key</span>' : ''}
+              ${isCorrect ? '<span class="ml-auto text-xs text-emerald-700 font-bold shrink-0">✓ Key</span>' : ""}
             </div>
           `;
-        }).join('');
+        }).join("");
 
         return `
           <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-2.5 shadow-sm">
@@ -1231,17 +1634,17 @@
             </div>
             ${imageHtml}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">${optionsHtml}</div>
-            ${exp ? `<div class="mt-2 p-2.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-950 leading-relaxed"><strong>💡 விளக்கம்:</strong> ${exp}</div>` : ''}
+            ${exp ? `<div class="mt-2 p-2.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-950 leading-relaxed"><strong>💡 விளக்கம்:</strong> ${exp}</div>` : ""}
           </div>
         `;
-      }).join('');
+      }).join("");
 
-      document.getElementById('previewModal').style.display = 'flex';
+      document.getElementById("previewModal").style.display = "flex";
 
       setTimeout(() => {
         if (window.renderMathInElement) {
           renderMathInElement(container, {
-            delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
+            delimiters: [{ left: "$$", right: "$$", display: true }, { left: "$", right: "$", display: false }],
             throwOnError: false
           });
         }
@@ -1249,12 +1652,15 @@
     }
 
     function closePreviewModal() {
-      document.getElementById('previewModal').style.display = 'none';
+      document.getElementById("previewModal").style.display = "none";
     }
 
     async function deleteExam(id) {
+      if (currentSessionRole !== "OWNER" && !currentSessionPermissions.can_delete) {
+        return alert("❌ உங்களுக்குத் தேர்வு நீக்கும் அனுமதி இல்லை!");
+      }
       if (confirm("இந்தத் தேர்வை முற்றிலும் நீக்கவா?")) {
-        await supabaseClient.from('exams').delete().eq('id', id);
+        await supabaseClient.from("exams").delete().eq("id", id);
         await loadExamsList();
       }
     }
@@ -1265,16 +1671,16 @@
 
       let qList = [];
       try {
-        if (typeof exam.questions === 'string') qList = JSON.parse(exam.questions);
+        if (typeof exam.questions === "string") qList = JSON.parse(exam.questions);
         else if (Array.isArray(exam.questions)) qList = exam.questions;
         else if (exam.questions?.questions) qList = exam.questions.questions;
       } catch(e) { return alert("பிழை: " + e.message); }
 
       const fileData = JSON.stringify(qList, null, 2);
-      const blob = new Blob([fileData], { type: 'application/json;charset=utf-8;' });
+      const blob = new Blob([fileData], { type: "application/json;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      const titleName = (exam.exam_title || exam.title || 'EXAM_BACKUP').replace(/[^a-zA-Z0-9_\u0B80-\u0BFF-]/g, '_');
+      const a = document.createElement("a");
+      const titleName = (exam.exam_title || exam.title || "EXAM_BACKUP").replace(/[^a-zA-Z0-9_\u0B80-\u0BFF-]/g, "_");
       a.href = url;
       a.download = `${titleName}_BACKUP.json`;
       document.body.appendChild(a);
@@ -1284,21 +1690,21 @@
     }
 
     async function loadSubmissionsList() {
-      const { data } = await supabaseClient.from('exam_submissions').select('*').order('submitted_at', { ascending: false });
+      const { data } = await supabaseClient.from("exam_submissions").select("*").order("submitted_at", { ascending: false });
       cachedResults = data || [];
       populateExamFilterDropdown();
       filterAndRenderResults();
     }
 
     function populateExamFilterDropdown() {
-      const select = document.getElementById('resultExamFilter');
+      const select = document.getElementById("resultExamFilter");
       if (!select) return;
 
       const uniqueExams = {};
       cachedResults.forEach(r => {
         if (r.exam_id) {
           const match = allLoadedExams.find(e => e.id === r.exam_id);
-          uniqueExams[r.exam_id] = match ? (match.exam_title || match.title) : 'தேர்வு (' + r.exam_id.slice(0,6) + ')';
+          uniqueExams[r.exam_id] = match ? (match.exam_title || match.title) : "தேர்வு (" + r.exam_id.slice(0,6) + ")";
         }
       });
 
@@ -1309,11 +1715,16 @@
     }
 
     function filterAndRenderResults() {
-      const selectedExamId = document.getElementById('resultExamFilter').value;
-      const tbody = document.getElementById('resultsTable');
+      const selectedExamId = document.getElementById("resultExamFilter").value;
+      const tbody = document.getElementById("resultsTable");
+
+      if (currentSessionRole !== "OWNER" && !currentSessionPermissions.can_view_results) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">முடிவுகளைப் பார்க்க உங்களுக்கு அனுமதி இல்லை.</td></tr>';
+        return;
+      }
 
       let list = cachedResults;
-      if (selectedExamId !== 'ALL') list = cachedResults.filter(r => r.exam_id === selectedExamId);
+      if (selectedExamId !== "ALL") list = cachedResults.filter(r => r.exam_id === selectedExamId);
 
       if (list.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">முடிவுகள் எதுவும் இல்லை.</td></tr>';
@@ -1322,7 +1733,7 @@
 
       tbody.innerHTML = list.map(sub => {
         const match = allLoadedExams.find(e => e.id === sub.exam_id);
-        const examName = match ? (match.exam_title || match.title) : 'தேர்வு';
+        const examName = match ? (match.exam_title || match.title) : "தேர்வு";
 
         return `
           <tr class="hover:bg-slate-50 transition">
@@ -1331,28 +1742,29 @@
             <td class="p-3 font-bold text-indigo-700">${sub.total_marks_obtained} / ${sub.maximum_marks}</td>
             <td class="p-3 font-bold ${sub.percentage >= 50 ? 'text-emerald-600' : 'text-amber-600'}">${sub.percentage}%</td>
             <td class="p-3 text-slate-600">${sub.correct_count} சரி | ${sub.wrong_count} தவறு</td>
-            <td class="p-3 text-slate-500">${new Date(sub.submitted_at).toLocaleString('ta-IN')}</td>
+            <td class="p-3 text-slate-500">${new Date(sub.submitted_at).toLocaleString("ta-IN")}</td>
           </tr>
         `;
-      }).join('');
+      }).join("");
     }
 
     async function downloadSubmissionsCSV() {
-      if (!cachedResults || cachedResults.length === 0) return alert('டவுன்லோட் செய்ய முடிவுகள் இல்லை!');
+      if (currentSessionRole !== "OWNER" && !currentSessionPermissions.can_view_results) return alert("❌ முடிவுகளை டவுன்லோட் செய்ய அனுமதி இல்லை!");
+      if (!cachedResults || cachedResults.length === 0) return alert("டவுன்லோட் செய்ய முடிவுகள் இல்லை!");
 
-      let csvContent = '\uFEFF';
-      csvContent += 'வ.எண்,தேதி & நேரம்,மாணவர் பெயர்,பதிவு எண்,மொபைல் எண்,மொத்த வினாக்கள்,சரியானவை,தவறானவை,எழுதாதவை,பெற்ற மதிப்பெண்,அதிகபட்ச மதிப்பெண்,சதவீதம் (%)\n';
+      let csvContent = "\uFEFF";
+      csvContent += "வ.எண்,தேதி & நேரம்,மாணவர் பெயர்,பதிவு எண்,மொபைல் எண்,மொத்த வினாக்கள்,சரியானவை,தவறானவை,எழுதாதவை,பெற்ற மதிப்பெண்,அதிகபட்ச மதிப்பெண்,சதவீதம் (%)\n";
 
       cachedResults.forEach((row, index) => {
-        const date = row.submitted_at ? new Date(row.submitted_at).toLocaleString('ta-IN') : '-';
-        const name = `"${(row.student_name || '').replace(/"/g, '""')}"`;
-        const roll = `"${(row.roll_number || '').replace(/"/g, '""')}"`;
-        csvContent += `${index + 1},${date},${name},${roll},${row.phone_number || '-'},${row.total_questions || 0},${row.correct_count || 0},${row.wrong_count || 0},${row.unattended_count || 0},${row.total_marks_obtained || 0},${row.maximum_marks || 0},${row.percentage || 0}%\n`;
+        const date = row.submitted_at ? new Date(row.submitted_at).toLocaleString("ta-IN") : "-";
+        const name = `"${(row.student_name || "").replace(/"/g, '""')}"`;
+        const roll = `"${(row.roll_number || "").replace(/"/g, '""')}"`;
+        csvContent += `${index + 1},${date},${name},${roll},${row.phone_number || "-"},${row.total_questions || 0},${row.correct_count || 0},${row.wrong_count || 0},${row.unattended_count || 0},${row.total_marks_obtained || 0},${row.maximum_marks || 0},${row.percentage || 0}%\n`;
       });
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `KALAMNESAN_ALL_RESULTS_${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(a);
@@ -1361,11 +1773,12 @@
     }
 
     function downloadFilteredResultsCSV() {
-      const selectedExamId = document.getElementById('resultExamFilter').value;
-      const select = document.getElementById('resultExamFilter');
+      if (currentSessionRole !== "OWNER" && !currentSessionPermissions.can_view_results) return alert("❌ முடிவுகளை டவுன்லோட் செய்ய அனுமதி இல்லை!");
+      const selectedExamId = document.getElementById("resultExamFilter").value;
+      const select = document.getElementById("resultExamFilter");
       const selectedExamName = select.options[select.selectedIndex].text;
 
-      let list = (selectedExamId !== 'ALL') ? cachedResults.filter(r => r.exam_id === selectedExamId) : cachedResults;
+      let list = (selectedExamId !== "ALL") ? cachedResults.filter(r => r.exam_id === selectedExamId) : cachedResults;
       if (list.length === 0) return alert("டவுன்லோட் செய்ய முடிவுகள் எதுவும் இல்லை!");
 
       let csv = "Student Name,Marks Obtained,Total Marks,Percentage,Correct,Wrong,Submitted Date\n";
@@ -1373,11 +1786,11 @@
         csv += `"${r.student_name}","${r.total_marks_obtained}","${r.maximum_marks}","${r.percentage}%","${r.correct_count}","${r.wrong_count}","${new Date(r.submitted_at).toLocaleString()}"\n`;
       });
 
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      const cleanTitle = selectedExamName.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
+      const cleanTitle = selectedExamName.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 30);
       a.download = `Results_${cleanTitle}_${new Date().toISOString().slice(0,10)}.csv`;
       a.click();
     }
