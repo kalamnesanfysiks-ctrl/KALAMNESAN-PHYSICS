@@ -252,6 +252,9 @@
       <div id="folderExamsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </div>
 
+    <!-- Step 2 New Navigation Mount Point -->
+    <div id="knPortalRoot" class="mt-10"></div>
+
   </div>
 
   <script>
@@ -290,6 +293,7 @@
 
     try {
       supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      window.supabaseClient = supabaseClient;
     } catch(e) { console.error(e); }
 
     function switchMedium(med) {
@@ -593,6 +597,22 @@
     }
 
     loadExams();
+  </script>
+
+  <script type="module">
+    import { KalamnesanNav } from "./step2-navigation.js";
+
+    if (window.supabaseClient) {
+      const nav = new KalamnesanNav({
+        containerId: "knPortalRoot",
+        supabaseClient: window.supabaseClient,
+        onStartExam: (examId, meta) => {
+          const demoParam = meta && meta.isDemo ? "&demo=1" : "";
+          window.location.href = `exam.html?id=${encodeURIComponent(examId)}${demoParam}`;
+        }
+      });
+      nav.init();
+    }
   </script>
 </body>
 </html>
