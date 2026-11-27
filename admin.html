@@ -7,6 +7,9 @@
 
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1e1b4b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="kalam.png">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -76,6 +79,12 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
+          <!-- 📲 Teacher App Install Button -->
+          <button type="button" id="adminPwaInstallBtn" onclick="triggerAdminPwaInstall()" style="display: none;"
+                  class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-emerald-400 shadow transition flex items-center gap-1.5 animate-pulse">
+            <span>📲</span> ஆப் நிறுவுக (Install App)
+          </button>
+
           <button type="button" id="ownerChangePassBtn" onclick="openChangePasswordModal()" 
                   class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-xl border border-amber-500/40 transition">
             🔑 கடவுச்சொல் மாற்று
@@ -716,6 +725,30 @@
     let activeAdminMediumFilter = "ALL";
     let activeAdminMainFilter = "ALL";
     let activeAdminSubFilter = "ALL";
+
+    // 📲 Teacher PWA Install Prompt State
+    let adminDeferredPrompt = null;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      adminDeferredPrompt = e;
+      const installBtn = document.getElementById("adminPwaInstallBtn");
+      if (installBtn) installBtn.style.display = "inline-flex";
+    });
+
+    function triggerAdminPwaInstall() {
+      if (adminDeferredPrompt) {
+        adminDeferredPrompt.prompt();
+        adminDeferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === "accepted") {
+            const installBtn = document.getElementById("adminPwaInstallBtn");
+            if (installBtn) installBtn.style.display = "none";
+          }
+          adminDeferredPrompt = null;
+        });
+      } else {
+        alert("📲 உங்கள் Browser Menu (மூன்று புள்ளிகள் ⋮)-ஐ கிளிக் செய்து 'Install App' அல்லது 'Add to Home Screen' என்பதைத் தேர்ந்தெடுக்கவும்!");
+      }
+    }
 
     const SUB_CATEGORY_LABELS = {
       "BOOK_BACK": { label: "📖 Book Back", bg: "bg-emerald-50 text-emerald-800 border-emerald-200" },
