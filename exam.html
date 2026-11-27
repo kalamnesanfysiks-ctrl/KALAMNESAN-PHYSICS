@@ -456,8 +456,15 @@
     function getSavedStudentSession() {
       try {
         const raw = localStorage.getItem(STUDENT_SESSION_KEY);
-        return raw ? JSON.parse(raw) : null;
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.phone || !parsed.name) {
+          localStorage.removeItem(STUDENT_SESSION_KEY);
+          return null;
+        }
+        return parsed;
       } catch (_) {
+        localStorage.removeItem(STUDENT_SESSION_KEY);
         return null;
       }
     }
@@ -475,7 +482,7 @@
     }
 
     function isExamPermittedForStudent(studentObj, examRow) {
-      if (!studentObj || !examRow) return true;
+      if (!studentObj || !examRow) return { allowed: true };
       const examGrade = parseInt(examRow.grade) || 0;
       const studentGrade = parseInt(studentObj.grade) || 0;
       if (studentGrade !== 0 && examGrade !== 0 && studentGrade !== examGrade) {
@@ -599,7 +606,6 @@
       return out;
     }
 
-    // 1. அனுமதி சரிபார்த்து விதிமுறைகள் திரையைக் காட்டுதல்
     async function verifyAndShowInstructions() {
       const nameEl = document.getElementById('authStudentName');
       const rollEl = document.getElementById('authStudentRoll');
@@ -701,7 +707,6 @@
       }
     }
 
-    // 2. மாணவர் ஒப்புதல் அளித்ததும் தேர்வைத் தொடங்குதல்
     function startActualExam() {
       document.getElementById('instructionsModal').style.display = 'none';
       isExamRunning = true;
@@ -750,7 +755,7 @@
         }
 
         const savedSession = getSavedStudentSession();
-        if (savedSession && savedSession.phone && savedSession.name) {
+        if (savedSession) {
           const check = isExamPermittedForStudent(savedSession, examData);
           if (check.allowed) {
             studentInfo = savedSession;
@@ -807,7 +812,7 @@
       const contentEl = document.getElementById('examContent');
       if (contentEl) contentEl.classList.remove('hidden');
 
-      const isEnglish = (examData.medium === 'ENGLISH');
+      const isEnglish = String(examData.medium || '').toUpperCase() === 'ENGLISH';
       const dTitle = examData.exam_title || examData.title || 'Online Physics Test';
       
       document.getElementById('examHeaderTitle').textContent = dTitle;
@@ -893,7 +898,7 @@
     function toggleReviewMark(qIdx) {
       reviewMarked[qIdx] = !reviewMarked[qIdx];
       const btn = document.getElementById(`reviewBtn_${qIdx}`);
-      const isEnglish = (examData && examData.medium === 'ENGLISH');
+      const isEnglish = String(examData?.medium || '').toUpperCase() === 'ENGLISH';
       if (btn) {
         btn.className = reviewMarked[qIdx]
           ? "px-3.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition bg-purple-600 text-white border-purple-400"
@@ -987,14 +992,14 @@
       isExamRunning = false;
       document.body.classList.remove('exam-active-lock');
 
-      const isEnglish = (examData && examData.medium === 'ENGLISH');
+      const isEnglish = String(examData?.medium || '').toUpperCase() === 'ENGLISH';
       const posMark = (examData && examData.positive_marks != null) ? parseFloat(examData.positive_marks) : 1;
       const negMark = (examData && examData.negative_marks != null) ? parseFloat(examData.negative_marks) : 0;
 
       let correct = 0;
       let wrong = 0;
       let unattended = 0;
-      let totalScore = 0;
+      let rawScore = 0;
 
       questionsList.forEach((q, index) => {
         const qData = extractQuestionDetails(q, isEnglish);
@@ -1003,14 +1008,15 @@
           unattended++;
         } else if (parseInt(selected) === parseInt(qData.correct)) {
           correct++;
-          totalScore += posMark;
+          rawScore += posMark;
         } else {
           wrong++;
-          totalScore -= negMark;
+          rawScore -= negMark;
         }
       });
 
-      const maxMarks = (questionsList.length > 0) ? (questionsList.length * posMark) : 0;
+      const totalScore = Math.round(rawScore * 100) / 100;
+      const maxMarks = (questionsList.length > 0) ? Math.round(questionsList.length * posMark * 100) / 100 : 0;
       const percentage = (maxMarks > 0) ? Math.max(0, Math.round((totalScore / maxMarks) * 100)) : 0;
 
       document.getElementById('examContent').classList.add('hidden');
@@ -1140,7 +1146,7 @@
 
     function openFullPaperModal() {
       if (!questionsList || questionsList.length === 0) return alert("வினாக்கள் இன்னும் தயாராகவில்லை!");
-      const isEnglish = (examData && examData.medium === 'ENGLISH');
+      const isEnglish = String(examData?.medium || '').toUpperCase() === 'ENGLISH';
       const title = examData ? (examData.exam_title || examData.title) : 'வினாத்தாள்';
 
       document.getElementById('paperModalTitle').textContent = `${title} — ${isEnglish ? 'Question Paper' : 'முழு வினாத்தாள்'}`;
