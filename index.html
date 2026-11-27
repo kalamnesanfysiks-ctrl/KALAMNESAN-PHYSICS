@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KALAMNESAN PHYSICS - தேர்வு மையப் பிரிவுகள்</title>
-  
+
   <!-- PWA Manifest & Mobile Meta -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1e1b4b">
@@ -18,7 +18,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;600;700;800&display=swap');
     body { font-family: 'Mukta Malar', 'Segoe UI', sans-serif; }
 
-    /* Step 2 New Navigation Card & Grid Styles */
+    /* One-by-One Navigation Card & Grid Styles */
     .kn-nav-wrapper {
       display: flex;
       flex-direction: column;
@@ -218,7 +218,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen pb-16">
 
-  <!-- 📲 PWA Install Floating Banner -->
+  <!-- PWA Install Floating Banner -->
   <div id="pwaInstallBanner" style="display: none;" class="bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 px-4 py-2.5 shadow-md sticky top-0 z-50">
     <div class="max-w-5xl mx-auto flex items-center justify-between gap-3 text-xs md:text-sm font-bold">
       <div class="flex items-center gap-2">
@@ -226,10 +226,10 @@
         <span>கலாம்நேசன் இயற்பியல் செயலியை உங்கள் போனில் நிறுவிக் கொள்ளுங்கள்!</span>
       </div>
       <div class="flex items-center gap-2">
-        <button id="pwaInstallBtn" class="bg-slate-950 hover:bg-slate-800 text-amber-300 px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow">
+        <button id="pwaInstallBtn" type="button" class="bg-slate-950 hover:bg-slate-800 text-amber-300 px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow">
           நிறுவுக (Install)
         </button>
-        <button onclick="dismissPwaBanner()" class="text-slate-900 hover:text-black font-extrabold text-sm px-1.5">
+        <button type="button" onclick="dismissPwaBanner()" class="text-slate-900 hover:text-black font-extrabold text-sm px-1.5">
           ✕
         </button>
       </div>
@@ -237,35 +237,23 @@
   </div>
 
   <div class="max-w-5xl mx-auto px-4 py-8">
-    
+
     <!-- Hero Banner -->
     <header class="bg-gradient-to-r from-indigo-950 via-indigo-900 to-blue-900 text-white p-6 md:p-8 rounded-3xl shadow-xl text-center mb-8 relative overflow-hidden">
       <div class="w-16 h-16 rounded-2xl bg-indigo-800/60 border border-indigo-400/30 flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner">
         ⚛
       </div>
       <h1 class="text-2xl md:text-3xl font-extrabold text-amber-300 tracking-wide">KALAMNESAN PHYSICS</h1>
-      <p class="text-sm md:text-base text-indigo-100 mt-1 font-medium">இணையவழி இயற்பியல் தேர்வு மையம் (Class 10, 11 & 12)</p>
+      <p class="text-sm md:text-base text-indigo-100 mt-1 font-medium">இணையவழி இயற்பியல் தேர்வு மையம் (10th, 11th, 12th, UG & PG TRB)</p>
       <div class="inline-block mt-4 bg-white/10 backdrop-blur-sm border border-white/20 text-indigo-200 text-xs px-4 py-1.5 rounded-full font-semibold">
         வழங்குபவர்: M. RAMESH, M.Sc., B.Ed., முதுகலை இயற்பியல் ஆசிரியர்
       </div>
-
-      <!-- Medium Switcher Toggle -->
-      <div class="mt-6 flex justify-center items-center">
-        <div class="bg-indigo-950/80 p-1.5 rounded-2xl border border-indigo-700/60 flex items-center gap-1 shadow-inner">
-          <button id="btnTamil" onclick="switchMedium('TAMIL')" class="px-5 py-2 rounded-xl text-xs md:text-sm font-bold transition bg-amber-500 text-slate-950 shadow">
-            🇮🇳 தமிழ் வழி
-          </button>
-          <button id="btnEnglish" onclick="switchMedium('ENGLISH')" class="px-5 py-2 rounded-xl text-xs md:text-sm font-bold transition text-indigo-200 hover:text-white">
-            🇬🇧 English Medium
-          </button>
-        </div>
-      </div>
     </header>
 
-    <!-- 📞 ஆசிரியர் தொடர்பு & சேர்க்கை உதவி அட்டை -->
+    <!-- ஆசிரியர் தொடர்பு & சேர்க்கை உதவி அட்டை -->
     <section class="max-w-4xl mx-auto my-6">
       <div class="bg-gradient-to-r from-indigo-900 to-indigo-950 text-white rounded-3xl p-5 md:p-6 shadow-xl border border-indigo-700/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-        
+
         <div class="text-center sm:text-left space-y-1">
           <div class="flex items-center justify-center sm:justify-start gap-2">
             <span class="text-amber-400 text-lg">📞</span>
@@ -280,13 +268,14 @@
         </div>
 
         <div class="flex items-center gap-2.5 shrink-0 flex-wrap justify-center">
-          <a href="tel:8072524484" 
+          <a href="tel:8072524484"
              class="bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow">
             <span>📱</span> அழைப்பு: 8072524484
           </a>
 
-          <a href="https://wa.me/919629352298?text=வணக்கம்%20சார்,%20KALAMNESAN%20PHYSICS%20ஆன்லைன்%20தேர்வு%20அனுமதி%20தொடர்பாக..." 
-             target="_blank" 
+          <a href="https://wa.me/919629352298?text=வணக்கம்%20சார்,%20KALAMNESAN%20PHYSICS%20ஆன்லைன்%20தேர்வு%20அனுமதி%20தொடர்பாக..."
+             target="_blank"
+             rel="noopener noreferrer"
              class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-lg active:scale-95">
             <span>💬</span> வாட்ஸ்அப் உதவி
           </a>
@@ -295,479 +284,22 @@
       </div>
     </section>
 
-    <div id="loading" class="text-center py-12 text-slate-500 font-semibold text-sm">
-      தேர்வுகள் சரிபார்க்கப்படுகின்றன...
-    </div>
-
-    <!-- 🌟 நிலை 1: முதன்மை ஃபோல்டர்கள் (Main Categories View) -->
-    <div id="foldersView" style="display: none;" class="space-y-6">
-      
-      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
-          <span>🎯</span> வகுப்பைத் தேர்வு செய்க:
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="filterFolderCards('ALL')" id="tabAll" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition shadow">
-            அனைத்தும் (All)
-          </button>
-          <button onclick="filterFolderCards('12')" id="tab12" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-            12-ஆம் வகுப்பு
-          </button>
-          <button onclick="filterFolderCards('11')" id="tab11" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-            11-ஆம் வகுப்பு
-          </button>
-          <button onclick="filterFolderCards('10')" id="tab10" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-            10-ஆம் வகுப்பு (SSLC)
-          </button>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-between border-b pb-3 border-slate-200">
-        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-          <span>📂</span> முதன்மைத் தேர்வுப் பிரிவுகள் (<span id="activeMediumBadge" class="text-indigo-600 font-extrabold">தமிழ் வழி</span>)
-        </h2>
-        <span class="text-xs bg-indigo-50 text-indigo-800 px-3 py-1 rounded-full font-semibold" id="totalExamsBadge">0 தேர்வுகள்</span>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="folderCardsGrid">
-        
-        <!-- Class 12 Cards -->
-        <div data-grade="12" onclick="openSubFolders('BOARD', 12, 'State Board - 12-ஆம் வகுப்பு')" 
-             class="folder-card bg-white p-6 rounded-2xl border-2 border-slate-200 hover:border-emerald-600 hover:shadow-lg transition cursor-pointer text-center group">
-          <div class="text-4xl mb-2 group-hover:scale-110 transition transform">📖</div>
-          <h3 class="font-bold text-slate-800 text-base">State Board – Class 12</h3>
-          <p class="text-xs text-slate-500 mt-0.5">பாடநூல், உள் வினாக்கள் & மாதிரித் தேர்வுகள்</p>
-          <span id="count-BOARD-12" class="mt-3 inline-block bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
-        </div>
-
-        <div data-grade="12" onclick="openSubFolders('NEET', 12, 'NEET Physics - 12-ஆம் வகுப்பு')" 
-             class="folder-card bg-white p-6 rounded-2xl border-2 border-slate-200 hover:border-rose-600 hover:shadow-lg transition cursor-pointer text-center group">
-          <div class="text-4xl mb-2 group-hover:scale-110 transition transform">🩺</div>
-          <h3 class="font-bold text-slate-800 text-base">NEET – Class 12</h3>
-          <p class="text-xs text-slate-500 mt-0.5">அலகுத் தேர்வுகள், NCERT & PYQ</p>
-          <span id="count-NEET-12" class="mt-3 inline-block bg-rose-50 text-rose-700 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
-        </div>
-
-        <div data-grade="12" onclick="openSubFolders('JEE', 12, 'JEE Main/Adv - 12-ஆம் வகுப்பு')" 
-             class="folder-card bg-white p-6 rounded-2xl border-2 border-slate-200 hover:border-sky-600 hover:shadow-lg transition cursor-pointer text-center group">
-          <div class="text-4xl mb-2 group-hover:scale-110 transition transform">⚙️</div>
-          <h3 class="font-bold text-slate-800 text-base">JEE – Class 12</h3>
-          <p class="text-xs text-slate-500 mt-0.5">அத்தியாயத் தேர்வுகள் & JEE Mock</p>
-          <span id="count-JEE-12" class="mt-3 inline-block bg-sky-50 text-sky-700 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
-        </div>
-
-        <!-- Class 11 Cards -->
-        <div data-grade="11" onclick="openSubFolders('BOARD', 11, 'State Board - 11-ஆம் வகுப்பு')" 
-             class="folder-card bg-white p-6 rounded-2xl border-2 border-slate-200 hover:border-emerald-600 hover:shadow-lg transition cursor-pointer text-center group">
-          <div class="text-4xl mb-2 group-hover:scale-110 transition transform">📖</div>
-          <h3 class="font-bold text-slate-800 text-base">State Board – Class 11</h3>
-          <p class="text-xs text-slate-500 mt-0.5">11-ஆம் வகுப்பு பாடத் தேர்வுகள்</p>
-          <span id="count-BOARD-11" class="mt-3 inline-block bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
-        </div>
-
-        <div data-grade="11" onclick="openSubFolders('NEET', 11, 'NEET Physics - 11-ஆம் வகுப்பு')" 
-             class="folder-card bg-white p-6 rounded-2xl border-2 border-slate-200 hover:border-rose-600 hover:shadow-lg transition cursor-pointer text-center group">
-          <div class="text-4xl mb-2 group-hover:scale-110 transition transform">🩺</div>
-          <h3 class="font-bold text-slate-800 text-base">NEET – Class 11</h3>
-          <p class="text-xs text-slate-500 mt-0.5">11-ஆம் வகுப்பு நீட் இயற்பியல் பயிற்சி</p>
-          <span id="count-NEET-11" class="mt-3 inline-block bg-rose-50 text-rose-700 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
-        </div>
-
-        <div data-grade="11" onclick="openSubFolders('JEE', 11, 'JEE Main/Adv - 11-ஆம் வகுப்பு')" 
-             class="folder-card bg-white p-6 rounded-2xl border-2 border-slate-200 hover:border-sky-600 hover:shadow-lg transition cursor-pointer text-center group">
-          <div class="text-4xl mb-2 group-hover:scale-110 transition transform">⚙️</div>
-          <h3 class="font-bold text-slate-800 text-base">JEE – Class 11</h3>
-          <p class="text-xs text-slate-500 mt-0.5">11-ஆம் வகுப்பு ஜே.இ.இ இயற்பியல்</p>
-          <span id="count-JEE-11" class="mt-3 inline-block bg-sky-50 text-sky-700 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
-        </div>
-
-        <!-- 🌟 Class 10 (SSLC) Cards -->
-        <div data-grade="10" onclick="openSubFolders('BOARD', 10, 'State Board - 10-ஆம் வகுப்பு (அறிவியல்)')" 
-             class="folder-card bg-white p-6 rounded-2xl border-2 border-emerald-300 hover:border-emerald-600 hover:shadow-lg transition cursor-pointer text-center group bg-emerald-50/10">
-          <div class="text-4xl mb-2 group-hover:scale-110 transition transform">📘</div>
-          <h3 class="font-bold text-slate-800 text-base">State Board – Class 10</h3>
-          <p class="text-xs text-slate-500 mt-0.5">10-ஆம் வகுப்பு அறிவியல் (இயற்பியல் பகுதிகள்)</p>
-          <span id="count-BOARD-10" class="mt-3 inline-block bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
-        </div>
-
-        <div data-grade="10" onclick="openSubFolders('NEET', 10, 'NEET Foundation - Class 10')" 
-             class="folder-card bg-white p-6 rounded-2xl border-2 border-rose-300 hover:border-rose-600 hover:shadow-lg transition cursor-pointer text-center group bg-rose-50/10">
-          <div class="text-4xl mb-2 group-hover:scale-110 transition transform">🌱</div>
-          <h3 class="font-bold text-slate-800 text-base">NEET Bridge Course (Class 10)</h3>
-          <p class="text-xs text-slate-500 mt-0.5">நீட் அடிப்படை & 11-ஆம் வகுப்பு தொடக்கப் பயிற்சி</p>
-          <span id="count-NEET-10" class="mt-3 inline-block bg-rose-100 text-rose-800 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
-        </div>
-
-        <div data-grade="10" onclick="openSubFolders('JEE', 10, 'JEE Foundation - Class 10')" 
-             class="folder-card bg-white p-6 rounded-2xl border-2 border-sky-300 hover:border-sky-600 hover:shadow-lg transition cursor-pointer text-center group bg-sky-50/10">
-          <div class="text-4xl mb-2 group-hover:scale-110 transition transform">📐</div>
-          <h3 class="font-bold text-slate-800 text-base">JEE Bridge Course (Class 10)</h3>
-          <p class="text-xs text-slate-500 mt-0.5">ஜே.இ.இ இயற்பியல் கணிதக் குறியீட்டு அடிப்படை</p>
-          <span id="count-JEE-10" class="mt-3 inline-block bg-sky-100 text-sky-800 text-xs font-bold px-3 py-1 rounded-full">0 தேர்வுகள்</span>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- 🌟 நிலை 2: சப்-ஃபோல்டர்கள் திரை -->
-    <div id="subFoldersView" style="display: none;" class="space-y-6">
-      <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-        <div>
-          <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">பிரிவு (Category)</span>
-          <h2 id="subFolderMainTitle" class="text-base md:text-lg font-bold text-slate-900 mt-0.5">முதன்மைப் பிரிவு</h2>
-        </div>
-        <button onclick="backToMainFolders()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
-          ⬅️ முதன்மைப் பக்கம்
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="subFolderCardsContainer"></div>
-    </div>
-
-    <!-- 🌟 நிலை 3: குறிப்பிட்ட சப்-ஃபோல்டருக்குள் உள்ள வினாத்தாள்கள் -->
-    <div id="folderView" style="display: none;" class="space-y-6">
-      
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-        <div>
-          <span id="breadcrumbText" class="text-[11px] font-bold text-slate-500">முதன்மை ➔ பிரிவு</span>
-          <h2 id="activeFolderName" class="text-base md:text-lg font-bold text-slate-900">வினாத்தாள்கள்</h2>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <div class="relative">
-            <input type="text" id="examSearchInput" oninput="filterCurrentFolderExams()" placeholder="தேர்வைத் தேடுக..." 
-                   class="px-3.5 py-1.5 pr-8 border border-slate-300 rounded-xl text-xs outline-none focus:border-indigo-600 bg-slate-50 w-44 sm:w-56">
-            <span class="absolute right-2.5 top-2 text-xs text-slate-400 pointer-events-none">🔍</span>
-          </div>
-
-          <button onclick="backToSubFolders()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1 shrink-0 shadow-sm">
-            ⬅️ பின்செல்க
-          </button>
-        </div>
-      </div>
-
-      <div id="folderExamsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-    </div>
-
-    <!-- Step 2 New Navigation Mount Point -->
-    <div id="knPortalRoot" class="mt-10"></div>
+    <!-- One-by-One Step Navigation Container -->
+    <div id="knPortalRoot" class="mt-6"></div>
 
   </div>
 
   <script>
     const SUPABASE_URL = 'https://agymotgpqfghoutettpv.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFneW1vdGdwcWZnaG91dGV0dHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NjA5NzIsImV4cCI6MjEwOTUzNjk3Mn0.KeTw76EwZQimmoPkxzVTWfd0p6WxavLsnhrZCsWmYec';
-    
-    let supabaseClient = null;
-    let allExams = [];
-    let currentFolderMatchedExams = [];
-    let selectedMedium = 'TAMIL';
-
-    let currentMainType = null;
-    let currentGrade = null;
-    let currentMainTitle = '';
-    let currentSubCategory = null;
-
-    const SUB_CATEGORY_CONFIG = {
-      BOARD: [
-        { key: 'BOOK_BACK', name: 'பாடநூல் வினாக்கள் (Book Back)', desc: 'நேரடிப் புத்தக வினாக்கள்', icon: '📖', color: 'border-emerald-200 hover:border-emerald-500 bg-emerald-50/30' },
-        { key: 'CREATED', name: 'உள் வினாக்கள் (Created / Internal)', desc: 'பாடத்தின் உட்பகுதி வினாக்கள்', icon: '💡', color: 'border-amber-200 hover:border-amber-500 bg-amber-50/30' },
-        { key: 'MODEL_PAPER', name: 'மாதிரி வினாத்தாள்கள் (Model Papers)', desc: 'முழுத் தேர்வு மாதிரித் தாள்கள்', icon: '📝', color: 'border-indigo-200 hover:border-indigo-500 bg-indigo-50/30' },
-        { key: 'COMBO', name: 'திருப்புதல் தேர்வுகள் (Combo Tests)', desc: 'பல அலகுகள் சேர்ந்த தேர்வுகள்', icon: '⚡', color: 'border-purple-200 hover:border-purple-500 bg-purple-50/30' }
-      ],
-      NEET: [
-        { key: 'UNIT_TEST', name: 'அலகுத் தேர்வுகள் (Unit / Bridge Tests)', desc: 'அலகு வாரியான அடிப்படைத் தேர்வுகள்', icon: '🎯', color: 'border-rose-200 hover:border-rose-500 bg-rose-50/30' },
-        { key: 'NCERT_LINE', name: 'NCERT / Foundation Lines', desc: 'NCERT அடிப்படைகளிலிருந்து வினாக்கள்', icon: '🔬', color: 'border-teal-200 hover:border-teal-500 bg-teal-50/30' },
-        { key: 'PYQ', name: 'முந்தைய ஆண்டு வினாக்கள் (PYQ)', desc: 'Previous Year & Bridge Questions', icon: '⏳', color: 'border-amber-200 hover:border-amber-500 bg-amber-50/30' },
-        { key: 'COMBO_FULL', name: 'முழு மாதிரித் தேர்வுகள் (Full Mock)', desc: 'Combo & Foundation Mock', icon: '🏆', color: 'border-indigo-200 hover:border-indigo-500 bg-indigo-50/30' }
-      ],
-      JEE: [
-        { key: 'CHAPTER_TEST', name: 'அத்தியாயத் தேர்வுகள் (Chapter Tests)', desc: 'அடிப்படை இயற்பியல் தேர்வுகள்', icon: '📐', color: 'border-sky-200 hover:border-sky-500 bg-sky-50/30' },
-        { key: 'PYQ_JEE', name: 'அடிப்படை முந்தைய வினாக்கள் (PYQ)', desc: 'Foundation & JEE Questions', icon: '⏳', color: 'border-orange-200 hover:border-orange-500 bg-orange-50/30' },
-        { key: 'MOCK_TEST', name: 'முழு மாதிரித் தேர்வுகள் (Mock Tests)', desc: 'Bridge Course Mock Tests', icon: '🚀', color: 'border-indigo-200 hover:border-indigo-500 bg-indigo-50/30' }
-      ]
-    };
 
     try {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      window.supabaseClient = supabaseClient;
-    } catch(e) { console.error(e); }
-
-    function switchMedium(med) {
-      selectedMedium = med;
-      const btnTam = document.getElementById('btnTamil');
-      const btnEng = document.getElementById('btnEnglish');
-      const badge = document.getElementById('activeMediumBadge');
-
-      if (med === 'TAMIL') {
-        btnTam.className = 'px-5 py-2 rounded-xl text-xs md:text-sm font-bold transition bg-amber-500 text-slate-950 shadow';
-        btnEng.className = 'px-5 py-2 rounded-xl text-xs md:text-sm font-bold transition text-indigo-200 hover:text-white';
-        badge.innerText = 'தமிழ் வழி';
-      } else {
-        btnEng.className = 'px-5 py-2 rounded-xl text-xs md:text-sm font-bold transition bg-amber-500 text-slate-950 shadow';
-        btnTam.className = 'px-5 py-2 rounded-xl text-xs md:text-sm font-bold transition text-indigo-200 hover:text-white';
-        badge.innerText = 'English Medium';
-      }
-
-      updateFolderCounts();
-      backToMainFolders();
+      window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) {
+      console.error("Supabase init error:", e);
     }
 
-    async function loadExams() {
-      try {
-        const { data, error } = await supabaseClient
-          .from('exams')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        
-        allExams = (data || []).filter(e => e.is_published !== false);
-
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('foldersView').style.display = 'block';
-
-        updateFolderCounts();
-      } catch (err) {
-        document.getElementById('loading').innerText = 'பிழை: ' + err.message;
-      }
-    }
-
-    function getNormalizedExam(exam) {
-      let med = (exam.medium || 'TAMIL').toUpperCase();
-      let type = (exam.exam_type || 'BOARD').toUpperCase();
-      let grade = parseInt(exam.grade) || 12;
-
-      let rawSub = (exam.sub_category || exam.chapter_name || '').toUpperCase();
-      const examTitleText = (exam.exam_title || exam.title || '').toLowerCase();
-
-      if (examTitleText.includes('jee')) type = 'JEE';
-      else if (examTitleText.includes('neet')) type = 'NEET';
-      else if (examTitleText.includes('board') || type.includes('BOARD') || type.includes('STATE')) type = 'BOARD';
-
-      let sub = 'BOOK_BACK';
-
-      if (rawSub === 'BOOK_BACK' || examTitleText.includes('book back') || examTitleText.includes('பாடநூல்')) {
-        sub = 'BOOK_BACK';
-      } else if (rawSub === 'CREATED' || examTitleText.includes('created') || examTitleText.includes('internal') || examTitleText.includes('உள் வினா')) {
-        sub = 'CREATED';
-      } else if (rawSub === 'MODEL_PAPER' || examTitleText.includes('model') || examTitleText.includes('மாதிரி')) {
-        sub = 'MODEL_PAPER';
-      } else if (rawSub === 'COMBO' || examTitleText.includes('combo') || examTitleText.includes('திருப்புதல்')) {
-        sub = 'COMBO';
-      } else if (rawSub === 'UNIT_TEST' || examTitleText.includes('unit') || examTitleText.includes('அலகு')) {
-        sub = 'UNIT_TEST';
-      } else if (rawSub === 'NCERT_LINE' || examTitleText.includes('ncert')) {
-        sub = 'NCERT_LINE';
-      } else if (rawSub === 'PYQ' || rawSub === 'PYQ_JEE' || examTitleText.includes('pyq')) {
-        sub = (type === 'JEE') ? 'PYQ_JEE' : 'PYQ';
-      } else if (rawSub === 'COMBO_FULL') {
-        sub = 'COMBO_FULL';
-      } else if (rawSub === 'CHAPTER_TEST') {
-        sub = 'CHAPTER_TEST';
-      } else if (rawSub === 'MOCK_TEST') {
-        sub = 'MOCK_TEST';
-      }
-
-      return { med, type, grade, sub };
-    }
-
-    function updateFolderCounts() {
-      const counts = {
-        'NEET-12': 0, 'NEET-11': 0, 'NEET-10': 0,
-        'JEE-12': 0,  'JEE-11': 0,  'JEE-10': 0,
-        'BOARD-12': 0, 'BOARD-11': 0, 'BOARD-10': 0
-      };
-
-      let mediumTotal = 0;
-
-      allExams.forEach(exam => {
-        const n = getNormalizedExam(exam);
-        if (n.med === selectedMedium) {
-          mediumTotal++;
-          const key = `${n.type}-${n.grade}`;
-          if (counts[key] !== undefined) counts[key]++;
-        }
-      });
-
-      document.getElementById('totalExamsBadge').innerText = `${mediumTotal} தேர்வுகள்`;
-      for (const [key, val] of Object.entries(counts)) {
-        const el = document.getElementById(`count-${key}`);
-        if (el) el.innerText = `${val} தேர்வுகள்`;
-      }
-    }
-
-    function filterFolderCards(grade) {
-      const cards = document.querySelectorAll('.folder-card');
-      const tabAll = document.getElementById('tabAll');
-      const tab12 = document.getElementById('tab12');
-      const tab11 = document.getElementById('tab11');
-      const tab10 = document.getElementById('tab10');
-
-      const activeCls = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition shadow';
-      const inactiveCls = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
-
-      if (tabAll) tabAll.className = (grade === 'ALL') ? activeCls : inactiveCls;
-      if (tab12) tab12.className = (grade === '12') ? activeCls : inactiveCls;
-      if (tab11) tab11.className = (grade === '11') ? activeCls : inactiveCls;
-      if (tab10) tab10.className = (grade === '10') ? activeCls : inactiveCls;
-
-      cards.forEach(card => {
-        const cardGrade = card.getAttribute('data-grade');
-        if (grade === 'ALL' || cardGrade === grade) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-    }
-
-    function openSubFolders(targetType, targetGrade, title) {
-      currentMainType = targetType;
-      currentGrade = targetGrade;
-      currentMainTitle = title;
-
-      document.getElementById('foldersView').style.display = 'none';
-      document.getElementById('folderView').style.display = 'none';
-      document.getElementById('subFoldersView').style.display = 'block';
-
-      document.getElementById('subFolderMainTitle').innerText = `${title} (${selectedMedium === 'TAMIL' ? 'தமிழ் வழி' : 'English Medium'})`;
-
-      const subCategories = SUB_CATEGORY_CONFIG[targetType] || SUB_CATEGORY_CONFIG.BOARD;
-      const container = document.getElementById('subFolderCardsContainer');
-      container.innerHTML = '';
-
-      subCategories.forEach(sub => {
-        const matchedCount = allExams.filter(exam => {
-          const n = getNormalizedExam(exam);
-          return n.med === selectedMedium && n.type === targetType && n.grade === targetGrade && n.sub === sub.key;
-        }).length;
-
-        const card = document.createElement('div');
-        card.className = `p-5 rounded-2xl border-2 ${sub.color} shadow-sm hover:shadow-md transition cursor-pointer text-center group flex flex-col justify-between`;
-        card.onclick = () => openSpecificSubFolderExams(sub.key, sub.name);
-
-        card.innerHTML = `
-          <div>
-            <div class="text-3xl mb-2 group-hover:scale-110 transition transform">${sub.icon}</div>
-            <h4 class="font-bold text-slate-900 text-sm md:text-base leading-snug">${sub.name}</h4>
-            <p class="text-[11px] text-slate-500 mt-1">${sub.desc}</p>
-          </div>
-          <div class="mt-4">
-            <span class="inline-block bg-white text-slate-700 border border-slate-200 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-              ${matchedCount} தேர்வுகள்
-            </span>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function openSpecificSubFolderExams(subKey, subName) {
-      currentSubCategory = subKey;
-
-      document.getElementById('subFoldersView').style.display = 'none';
-      document.getElementById('folderView').style.display = 'block';
-
-      document.getElementById('breadcrumbText').innerText = `${currentMainTitle} ➔ ${subName}`;
-      document.getElementById('activeFolderName').innerText = `📄 ${subName}`;
-
-      const searchInput = document.getElementById('examSearchInput');
-      if (searchInput) searchInput.value = '';
-
-      currentFolderMatchedExams = allExams.filter(exam => {
-        const n = getNormalizedExam(exam);
-        return n.med === selectedMedium && n.type === currentMainType && n.grade === currentGrade && n.sub === subKey;
-      });
-
-      renderExamCards(currentFolderMatchedExams);
-    }
-
-    function filterCurrentFolderExams() {
-      const q = (document.getElementById('examSearchInput').value || '').toLowerCase().trim();
-      if (!q) {
-        renderExamCards(currentFolderMatchedExams);
-        return;
-      }
-
-      const filtered = currentFolderMatchedExams.filter(exam => {
-        const t = (exam.exam_title || exam.title || '').toLowerCase();
-        return t.includes(q);
-      });
-
-      renderExamCards(filtered);
-    }
-
-    function renderExamCards(examsList) {
-      const container = document.getElementById('folderExamsContainer');
-      container.innerHTML = '';
-
-      if (examsList.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-full bg-white p-8 rounded-2xl text-center text-slate-500 border border-slate-200">
-            <p class="font-bold text-slate-700">இந்தப் பிரிவில் தேர்வுகள் எதுவும் கிடைக்கவில்லை.</p>
-            <p class="text-xs mt-1">ஆசிரியர் விரைவில் இப்பிரிவிற்கான வினாத்தாள்களைப் பதிவேற்றுவார்!</p>
-          </div>
-        `;
-        return;
-      }
-
-      examsList.forEach(exam => {
-        let qCount = 0;
-        try {
-          if (typeof exam.questions === 'string') {
-            qCount = JSON.parse(exam.questions).length;
-          } else if (Array.isArray(exam.questions)) {
-            qCount = exam.questions.length;
-          } else if (exam.questions?.questions) {
-            qCount = exam.questions.questions.length;
-          }
-        } catch(e) {}
-
-        const displayTitle = exam.exam_title || exam.title || 'ஆன்லைன் இயற்பியல் தேர்வு';
-        const posMark = exam.positive_marks ?? 1;
-        const negMark = exam.negative_marks ?? 0;
-
-        const card = document.createElement('div');
-        card.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4 hover:border-indigo-400 transition";
-        card.innerHTML = `
-          <div>
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
-                ${exam.exam_type || 'EXAM'}
-              </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                Class ${exam.grade || 10}
-              </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
-                🔒 அனுமதி சரிபார்ப்பு
-              </span>
-            </div>
-            <h4 class="font-bold text-slate-900 text-sm md:text-base leading-snug">${displayTitle}</h4>
-            <p class="text-xs text-slate-500 mt-2">
-              ⏱️ ${exam.duration_minutes || 15} நிமிடம் | ❓ ${qCount} வினாக்கள் | மதிப்பெண்: +${posMark} / -${negMark}
-            </p>
-          </div>
-          <a href="exam.html?id=${exam.id}" class="block text-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs md:text-sm transition shadow">
-            தேர்வைத் தொடங்குக ➔
-          </a>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function backToSubFolders() {
-      document.getElementById('folderView').style.display = 'none';
-      document.getElementById('subFoldersView').style.display = 'block';
-    }
-
-    function backToMainFolders() {
-      document.getElementById('folderView').style.display = 'none';
-      document.getElementById('subFoldersView').style.display = 'none';
-      document.getElementById('foldersView').style.display = 'block';
-    }
-
-    // 📲 PWA Installation Handler
+    // PWA Installation Handler
     let deferredPrompt = null;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -791,8 +323,6 @@
       const banner = document.getElementById('pwaInstallBanner');
       if (banner) banner.style.display = 'none';
     }
-
-    loadExams();
   </script>
 
   <script type="module">
