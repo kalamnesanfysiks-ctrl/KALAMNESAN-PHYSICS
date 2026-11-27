@@ -17,6 +17,203 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@400;600;700;800&display=swap');
     body { font-family: 'Mukta Malar', 'Segoe UI', sans-serif; }
+
+    /* Step 2 New Navigation Card & Grid Styles */
+    .kn-nav-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .kn-demo-section,
+    .kn-tracks-section {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+    }
+
+    .kn-section-header h3 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .kn-section-header p {
+      font-size: 13px;
+      color: #64748b;
+      margin: 4px 0 0;
+    }
+
+    .kn-demo-grid,
+    .kn-track-grid,
+    .kn-medium-grid,
+    .kn-folder-grid,
+    .kn-test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .kn-track-card,
+    .kn-med-card,
+    .kn-subject-card,
+    .kn-subfolder-card {
+      position: relative;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 18px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .kn-track-card:hover,
+    .kn-med-card:hover,
+    .kn-subject-card:hover,
+    .kn-subfolder-card:hover {
+      border-color: #4f46e5;
+      background: #eef2ff;
+      transform: translateY(-2px);
+    }
+
+    .kn-track-card h4,
+    .kn-med-card h4,
+    .kn-subject-card h4,
+    .kn-subfolder-card h4 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .kn-track-card span {
+      display: block;
+      font-size: 13px;
+      color: #475569;
+      margin-top: 4px;
+    }
+
+    .kn-track-arrow {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: 800;
+      color: #4f46e5;
+    }
+
+    .kn-demo-card,
+    .kn-test-card {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .kn-badge {
+      display: inline-block;
+      width: fit-content;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: 999px;
+    }
+
+    .kn-demo-actions,
+    .kn-test-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .kn-btn-start,
+    .kn-btn-start-demo {
+      background: #4f46e5;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .kn-btn-video {
+      background: #e0e7ff;
+      color: #3730a3;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .kn-back-btn {
+      width: fit-content;
+      background: #e2e8f0;
+      color: #0f172a;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .kn-empty,
+    .kn-loading {
+      font-size: 13px;
+      color: #64748b;
+      padding: 10px 0;
+    }
+
+    .kn-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 60;
+    }
+
+    .kn-modal-box {
+      background: #ffffff;
+      border-radius: 20px;
+      max-width: 640px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .kn-modal-header {
+      background: #1e1b4b;
+      color: #ffffff;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .kn-modal-close {
+      background: transparent;
+      color: #ffffff;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen pb-16">
@@ -348,7 +545,6 @@
       else if (examTitleText.includes('neet')) type = 'NEET';
       else if (examTitleText.includes('board') || type.includes('BOARD') || type.includes('STATE')) type = 'BOARD';
 
-     grade = parseInt(exam.grade) || 12;
       let sub = 'BOOK_BACK';
 
       if (rawSub === 'BOOK_BACK' || examTitleText.includes('book back') || examTitleText.includes('பாடநூல்')) {
