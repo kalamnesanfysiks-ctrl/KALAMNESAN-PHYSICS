@@ -91,19 +91,20 @@ export class KalamnesanNav {
     const demoGrid = document.getElementById("knDemoGrid");
     if (!demoGrid) return;
 
-    if (!this.supabase || typeof this.supabase.rpc !== "function") {
+    if (!this.supabase) {
       demoGrid.innerHTML = `<div class="kn-empty">தற்போது மாதிரித் தேர்வுகள் இல்லை.</div>`;
       return;
     }
 
     try {
-      const { data, error } = await this.supabase.rpc("get_demo_exams");
-      if (!error && Array.isArray(data) && data.length > 0) {
-        this.renderDemoCards(demoGrid, data);
-        return;
+      if (typeof this.supabase.rpc === "function") {
+        const { data, error } = await this.supabase.rpc("get_demo_exams");
+        if (!error && Array.isArray(data) && data.length > 0) {
+          this.renderDemoCards(demoGrid, data);
+          return;
+        }
       }
 
-      // Fallback to exams table if is_demo rows exist directly
       if (this.supabase.from) {
         const { data: rows } = await this.supabase
           .from("exams")
@@ -313,34 +314,51 @@ export class KalamnesanNav {
 
   async fetchLegacyMatchingExams() {
     if (!this.supabase || !this.supabase.from) return [];
-    const { data, error } = await this.supabase
-      .from("exams")
-      .select("*")
-      .order("created_at", { ascending: false });
+    try {
+      const { data, error } = await this.supabase
+        .from("exams")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-    if (error || !Array.isArray(data)) return [];
+      if (error || !Array.isArray(data)) return [];
 
-    const gradeNum = this.state.track === "10th" ? 10 : this.state.track === "11th" ? 11 : this.state.track === "12th" ? 12 : null;
-    const medUpper = this.state.medium === "en" ? "ENGLISH" : "TAMIL";
+      const gradeNum = this.state.track === "10th" ? 10 : this.state.track === "11th" ? 11 : this.state.track === "12th" ? 12 : null;
+      const medUpper = this.state.medium === "en" ? "ENGLISH" : "TAMIL";
+      const subfolderKey = this.state.subfolder || "unit_wise";
 
-    return data
-      .filter((e) => e.is_published !== false)
-      .filter((e) => {
-        if (gradeNum && Number(e.grade) !== gradeNum) return false;
-        const rowMed = String(e.medium || "TAMIL").toUpperCase();
-        if (rowMed !== medUpper && rowMed !== "ALL" && rowMed !== "BOTH") return false;
+      return data
+        .filter((e) => e.is_published !== false)
+        .filter((e) => {
+          if (gradeNum && parseInt(e.grade) !== gradeNum) return false;
+          const rowMed = String(e.medium || "TAMIL").toUpperCase();
+          if (rowMed !== medUpper && rowMed !== "ALL" && rowMed !== "BOTH") return false;
 
-        const rowType = String(e.exam_type || "BOARD").toUpperCase();
-        if (this.state.stream === "tn_board" && !rowType.includes("BOARD") && !rowType.includes("STATE")) return false;
-        if (this.state.stream === "neet" && !rowType.includes("NEET")) return false;
-        if (this.state.stream === "jee" && !rowType.includes("JEE")) return false;
+          const rowType = String(e.exam_type || "BOARD").toUpperCase();
+          if (this.state.stream === "tn_board" && !rowType.includes("BOARD") && !rowType.includes("STATE")) return false;
+          if (this.state.stream === "neet" && !rowType.includes("NEET")) return false;
+          if (this.state.stream === "jee" && !rowType.includes("JEE")) return false;
 
-        return true;
-      })
-      .map((r) => ({
-        ...r,
-        question_count: getQuestionCount(r.questions)
-      }));
+          const rawSub = String(e.sub_category || e.chapter_name || "").toUpperCase();
+          const titleText = String(e.exam_title || e.title || "").toUpperCase();
+
+          if (subfolderKey === "pyq") {
+            return rawSub.includes("PYQ") || titleText.includes("PYQ");
+          }
+          if (subfolderKey === "created") {
+            return rawSub.includes("CREAT") || rawSub.includes("INTERNAL") || titleText.includes("CREAT") || titleText.includes("உள்");
+          }
+          if (subfolderKey === "revision") {
+            return rawSub.includes("COMBO") || rawSub.includes("MODEL") || titleText.includes("COMBO") || titleText.includes("மாதிரி");
+          }
+          return !rawSub.includes("PYQ") && !rawSub.includes("CREAT") && !rawSub.includes("COMBO") && !rawSub.includes("MODEL");
+        })
+        .map((r) => ({
+          ...r,
+          question_count: getQuestionCount(r.questions)
+        }));
+    } catch (_) {
+      return [];
+    }
   }
 
   async loadTestList() {
@@ -359,21 +377,23 @@ export class KalamnesanNav {
     const container = document.getElementById("knTestListContainer");
     if (!container) return;
 
-    if (!this.supabase || typeof this.supabase.rpc !== "function") {
-      container.innerHTML = `<div class="kn-empty">இப்பிரிவில் தற்போது தேர்வுகள் எதுவும் பதிவேற்றப்படவில்லை.</div>`;
-      return;
-    }
+    let examsToRender = [];
 
-    const { data, error } = await this.supabase.rpc("get_exams_by_folder", {
-      p_track: this.state.track,
-      p_subject: this.state.subject,
-      p_subfolder: this.state.subfolder,
-      p_medium: this.state.medium
-    });
+    try {
+      if (this.supabase && typeof this.supabase.rpc === "function") {
+        const { data, error } = await this.supabase.rpc("get_exams_by_folder", {
+          p_track: this.state.track,
+          p_subject: this.state.subject,
+          p_subfolder: this.state.subfolder,
+          p_medium: this.state.medium
+        });
+        if (!error && Array.isArray(data) && data.length > 0) {
+          examsToRender = data;
+        }
+      }
+    } catch (_) {}
 
-    let examsToRender = (!error && Array.isArray(data) && data.length > 0) ? data : [];
-
-    // Fallback to existing exams table rows so older tests aren't lost
+    // Instant legacy fallback so existing 31 tests show up without loading delay
     if (examsToRender.length === 0) {
       examsToRender = await this.fetchLegacyMatchingExams();
     }
