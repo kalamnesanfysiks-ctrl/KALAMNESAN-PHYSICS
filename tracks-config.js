@@ -6,14 +6,15 @@ export const TRACK_CONFIG = {
     default_medium: "ta",
     streams: [
       { id: "tn_board", label_en: "State Board TN", label_ta: "தமிழ்நாடு மாநிலப் பாடத்திட்டம்", mediums: ["ta", "en"] },
-      { id: "neet_bridge", label_en: "NEET Bridge Course", label_ta: "நீட் அடிப்படைப் பயிற்சி", mediums: ["ta", "en"] },
-      { id: "jee_bridge", label_en: "JEE Bridge Course", label_ta: "ஜே.இ.இ அடிப்படைப் பயிற்சி", mediums: ["ta", "en"] },
+      { id: "neet_bridge", label_en: "NEET Foundation / Bridge", label_ta: "நீட் அடிப்படைப் பயிற்சி", mediums: ["ta", "en"] },
+      { id: "jee_bridge", label_en: "JEE Foundation / Bridge", label_ta: "ஜே.இ.இ அடிப்படைப் பயிற்சி", mediums: ["ta", "en"] },
       { id: "ncert", label_en: "NCERT (English Only)", label_ta: "NCERT (ஆங்கில வழி மட்டும்)", mediums: ["en"] },
       { id: "icse", label_en: "ICSE (English Only)", label_ta: "ICSE (ஆங்கில வழி மட்டும்)", mediums: ["en"] }
     ],
     subjects: [
-      { id: "science", label_en: "Science", label_ta: "அறிவியல்" },
       { id: "physics", label_en: "Physics", label_ta: "இயற்பியல்" },
+      { id: "chemistry", label_en: "Chemistry", label_ta: "வேதியியல்" },
+      { id: "biology", label_en: "Biology", label_ta: "உயிரியல்" },
       { id: "maths", label_en: "Mathematics", label_ta: "கணிதம்" }
     ]
   },
