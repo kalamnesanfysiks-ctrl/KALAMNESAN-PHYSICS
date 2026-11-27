@@ -274,7 +274,7 @@
       </section>
 
       <!-- 2️⃣ அரசுப் பள்ளி & நீட் மாணவர் அனுமதி -->
-      <section class="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+      <section id="studentAdmissionSection" class="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
         <div class="border-b border-slate-100 pb-3 flex items-center justify-between flex-wrap gap-2">
           <div>
             <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -285,7 +285,7 @@
           <span id="studentCountBadge" class="text-xs bg-emerald-50 text-emerald-700 font-bold px-3 py-1 rounded-full">0 மாணவர்கள்</span>
         </div>
 
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+        <div id="studentAdmissionFormBox" class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
             <div class="sm:col-span-2">
               <label class="block text-xs font-bold text-slate-700 mb-1">மாணவர் பெயர் *</label>
@@ -337,7 +337,7 @@
               </select>
             </div>
 
-            <button type="button" onclick="addPaidStudent()" 
+            <button type="button" id="addStudentBtn" onclick="addPaidStudent()" 
                     class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2 rounded-xl text-xs shadow transition flex items-center gap-1.5">
               <span>+</span> மாணவரை அனுமதி (Add Student)
             </button>
@@ -682,6 +682,17 @@
   </div> <!-- End of adminProtectedContent -->
 
   <script>
+    const SUPABASE_URL = "https://agymotgpqfghoutettpv.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFneW1vdGdwcWZnaG91dGV0dHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NjA5NzIsImV4cCI6MjEwOTUzNjk3Mn0.KeTw76EwZQimmoPkxzVTWfd0p6WxavLsnhrZCsWmYec";
+
+    let supabaseClient = null;
+    try {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      window.supabaseClient = supabaseClient;
+    } catch (e) {
+      console.error("Supabase init error:", e);
+    }
+
     const DEFAULT_OWNER_PASS = "RAMESH@123";
     const OWNER_PASS_STORAGE_KEY = "kn_owner_password_v1";
     const COWORKERS_STORAGE_KEY = "kn_coworkers_v1";
@@ -695,6 +706,50 @@
       can_manage_students: false,
       can_view_results: false,
       can_delete: false
+    };
+
+    let allLoadedExams = [];
+    let allPaidStudents = [];
+    let cachedResults = [];
+
+    let activeAdminGradeFilter = "ALL";
+    let activeAdminMediumFilter = "ALL";
+    let activeAdminMainFilter = "ALL";
+    let activeAdminSubFilter = "ALL";
+
+    const SUB_CATEGORY_LABELS = {
+      "BOOK_BACK": { label: "📖 Book Back", bg: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+      "CREATED": { label: "💡 Created", bg: "bg-amber-50 text-amber-800 border-amber-200" },
+      "MODEL_PAPER": { label: "📝 Model Paper", bg: "bg-indigo-50 text-indigo-800 border-indigo-200" },
+      "COMBO": { label: "⚡ Combo", bg: "bg-purple-50 text-purple-800 border-purple-200" },
+      "UNIT_TEST": { label: "🎯 Unit Test", bg: "bg-rose-50 text-rose-800 border-rose-200" },
+      "NCERT_LINE": { label: "🔬 NCERT Line", bg: "bg-teal-50 text-teal-800 border-teal-200" },
+      "PYQ": { label: "⏳ PYQ", bg: "bg-amber-50 text-amber-900 border-amber-300" },
+      "COMBO_FULL": { label: "🏆 Full Mock", bg: "bg-indigo-50 text-indigo-900 border-indigo-300" },
+      "CHAPTER_TEST": { label: "📐 Chapter Test", bg: "bg-sky-50 text-sky-800 border-sky-200" },
+      "PYQ_JEE": { label: "⏳ JEE PYQ", bg: "bg-orange-50 text-orange-800 border-orange-200" },
+      "MOCK_TEST": { label: "🚀 JEE Mock", bg: "bg-indigo-50 text-indigo-900 border-indigo-300" },
+      "GENERAL": { label: "📁 General", bg: "bg-slate-100 text-slate-700 border-slate-200" }
+    };
+
+    const SUB_CATEGORIES_DICT = {
+      BOARD: [
+        { val: "BOOK_BACK", label: "📖 Book Back Direct (பாடநூல் வினாக்கள்)" },
+        { val: "CREATED", label: "💡 Created / Internal (உள் வினாக்கள்)" },
+        { val: "MODEL_PAPER", label: "📝 Model Question Papers (மாதிரி வினாத்தாள்கள்)" },
+        { val: "COMBO", label: "⚡ Combo / Revision Tests (திருப்புதல் தேர்வுகள்)" }
+      ],
+      NEET: [
+        { val: "UNIT_TEST", label: "🎯 Unit Wise Tests / Bridge Course" },
+        { val: "NCERT_LINE", label: "🔬 NCERT Line-by-Line / Foundation" },
+        { val: "PYQ", label: "⏳ Previous Year Questions (PYQ)" },
+        { val: "COMBO_FULL", label: "🏆 Combo & Full Syllabus Mock" }
+      ],
+      JEE: [
+        { val: "CHAPTER_TEST", label: "📐 Chapter Tests / Bridge Course" },
+        { val: "PYQ_JEE", label: "⏳ JEE Main PYQ" },
+        { val: "MOCK_TEST", label: "🚀 Full Length Mock Tests" }
+      ]
     };
 
     function getOwnerPassword() {
@@ -720,10 +775,14 @@
 
     function applyRolePermissionsToUI() {
       const isOwner = currentSessionRole === "OWNER";
+      const canUpload = isOwner || !!currentSessionPermissions.can_upload;
+      const canManageStudents = isOwner || !!currentSessionPermissions.can_manage_students;
+
       const badge = document.getElementById("roleBadge");
       const userLabel = document.getElementById("activeAdminUserLabel");
       const ownerPassBtn = document.getElementById("ownerChangePassBtn");
       const coWorkerSection = document.getElementById("ownerCoWorkerSection");
+      const studentFormBox = document.getElementById("studentAdmissionFormBox");
 
       if (badge) {
         badge.innerText = isOwner ? "OWNER" : "CO-WORKER";
@@ -742,8 +801,17 @@
       }
 
       const uploadForm = document.getElementById("uploadForm");
-      if (uploadForm && !isOwner && !currentSessionPermissions.can_upload) {
-        uploadForm.querySelectorAll("input, select, textarea, button").forEach(el => { el.disabled = true; });
+      if (uploadForm) {
+        uploadForm.querySelectorAll("input, select, textarea, button").forEach(el => {
+          el.disabled = !canUpload;
+        });
+      }
+
+      if (studentFormBox) {
+        studentFormBox.querySelectorAll("input, select, button").forEach(el => {
+          el.disabled = !canManageStudents;
+        });
+        studentFormBox.style.opacity = canManageStudents ? "1" : "0.6";
       }
     }
 
@@ -898,7 +966,7 @@
 
         return `
           <tr>
-            <td class="p-3 font-bold text-slate-900">${w.name}</td>
+            <td class="p-3 font-bold text-slate-900">${w.name} <span class="text-[11px] text-slate-400 font-normal">(Pass: ••••)</span></td>
             <td class="p-3 text-indigo-800 font-semibold">${badges}</td>
             <td class="p-3">
               <span class="px-2 py-0.5 rounded font-bold ${w.active !== false ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">
@@ -943,60 +1011,6 @@
     document.getElementById("adminPasswordInput")?.addEventListener("keypress", function(e) {
       if (e.key === "Enter") verifyAdminAccess();
     });
-
-    const SUPABASE_URL = "https://agymotgpqfghoutettpv.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFneW1vdGdwcWZnaG91dGV0dHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5NjA5NzIsImV4cCI6MjEwOTUzNjk3Mn0.KeTw76EwZQimmoPkxzVTWfd0p6WxavLsnhrZCsWmYec";
-    
-    let supabaseClient = null;
-    let allLoadedExams = [];
-    let allPaidStudents = [];
-    let cachedResults = [];
-
-    let activeAdminGradeFilter = "ALL";
-    let activeAdminMediumFilter = "ALL";
-    let activeAdminMainFilter = "ALL";
-    let activeAdminSubFilter = "ALL";
-
-    const SUB_CATEGORY_LABELS = {
-      "BOOK_BACK": { label: "📖 Book Back", bg: "bg-emerald-50 text-emerald-800 border-emerald-200" },
-      "CREATED": { label: "💡 Created", bg: "bg-amber-50 text-amber-800 border-amber-200" },
-      "MODEL_PAPER": { label: "📝 Model Paper", bg: "bg-indigo-50 text-indigo-800 border-indigo-200" },
-      "COMBO": { label: "⚡ Combo", bg: "bg-purple-50 text-purple-800 border-purple-200" },
-      "UNIT_TEST": { label: "🎯 Unit Test", bg: "bg-rose-50 text-rose-800 border-rose-200" },
-      "NCERT_LINE": { label: "🔬 NCERT Line", bg: "bg-teal-50 text-teal-800 border-teal-200" },
-      "PYQ": { label: "⏳ PYQ", bg: "bg-amber-50 text-amber-900 border-amber-300" },
-      "COMBO_FULL": { label: "🏆 Full Mock", bg: "bg-indigo-50 text-indigo-900 border-indigo-300" },
-      "CHAPTER_TEST": { label: "📐 Chapter Test", bg: "bg-sky-50 text-sky-800 border-sky-200" },
-      "PYQ_JEE": { label: "⏳ JEE PYQ", bg: "bg-orange-50 text-orange-800 border-orange-200" },
-      "MOCK_TEST": { label: "🚀 JEE Mock", bg: "bg-indigo-50 text-indigo-900 border-indigo-300" },
-      "GENERAL": { label: "📁 General", bg: "bg-slate-100 text-slate-700 border-slate-200" }
-    };
-
-    const SUB_CATEGORIES_DICT = {
-      BOARD: [
-        { val: "BOOK_BACK", label: "📖 Book Back Direct (பாடநூல் வினாக்கள்)" },
-        { val: "CREATED", label: "💡 Created / Internal (உள் வினாக்கள்)" },
-        { val: "MODEL_PAPER", label: "📝 Model Question Papers (மாதிரி வினாத்தாள்கள்)" },
-        { val: "COMBO", label: "⚡ Combo / Revision Tests (திருப்புதல் தேர்வுகள்)" }
-      ],
-      NEET: [
-        { val: "UNIT_TEST", label: "🎯 Unit Wise Tests / Bridge Course" },
-        { val: "NCERT_LINE", label: "🔬 NCERT Line-by-Line / Foundation" },
-        { val: "PYQ", label: "⏳ Previous Year Questions (PYQ)" },
-        { val: "COMBO_FULL", label: "🏆 Combo & Full Syllabus Mock" }
-      ],
-      JEE: [
-        { val: "CHAPTER_TEST", label: "📐 Chapter Tests / Bridge Course" },
-        { val: "PYQ_JEE", label: "⏳ JEE Main PYQ" },
-        { val: "MOCK_TEST", label: "🚀 Full Length Mock Tests" }
-      ]
-    };
-
-    try {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) {
-      console.error(e);
-    }
 
     function updateSubCategoryOptions() {
       const type = document.getElementById("examType").value;
