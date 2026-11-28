@@ -838,6 +838,7 @@
     function checkAdminSession() {
       const isAuth = sessionStorage.getItem("kalamnesan_admin_authenticated");
       if (isAuth === "true") {
+        localStorage.setItem("kn_admin_teacher_flag", "true");
         currentSessionRole = sessionStorage.getItem(SESSION_ROLE_KEY) || "OWNER";
         if (currentSessionRole === "OWNER") {
           currentSessionPermissions = {
@@ -871,6 +872,7 @@
         sessionStorage.setItem("kalamnesan_admin_authenticated", "true");
         sessionStorage.setItem(SESSION_ROLE_KEY, "OWNER");
         sessionStorage.setItem(SESSION_USER_KEY, "Owner (M. Ramesh)");
+        localStorage.setItem("kn_admin_teacher_flag", "true");
         err.classList.add("hidden");
         document.getElementById("adminAuthOverlay").style.display = "none";
         document.getElementById("adminProtectedContent").style.display = "block";
@@ -887,6 +889,7 @@
         sessionStorage.setItem(SESSION_ROLE_KEY, "COWORKER");
         sessionStorage.setItem(SESSION_USER_KEY, matchedWorker.name || "Co-Worker");
         sessionStorage.setItem("kn_coworker_perms", JSON.stringify(currentSessionPermissions));
+        localStorage.setItem("kn_admin_teacher_flag", "true");
         err.classList.add("hidden");
         document.getElementById("adminAuthOverlay").style.display = "none";
         document.getElementById("adminProtectedContent").style.display = "block";
@@ -1025,6 +1028,7 @@
       sessionStorage.removeItem(SESSION_ROLE_KEY);
       sessionStorage.removeItem(SESSION_USER_KEY);
       sessionStorage.removeItem("kn_coworker_perms");
+      localStorage.removeItem("kn_admin_teacher_flag");
       window.location.reload();
     }
 
