@@ -116,9 +116,9 @@
       </div>
 
       <div class="pt-3 flex gap-2">
-        <a href="index.html" class="w-1/3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-center font-bold text-xs rounded-xl transition flex items-center justify-center">
-          வெளியேறு
-        </a>
+        <button type="button" onclick="goBackToTestFolder()" class="w-1/3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-center font-bold text-xs rounded-xl transition flex items-center justify-center">
+          ← பின் செல்
+        </button>
         <button type="button" id="btnVerifyAndStart" onclick="verifyAndShowInstructions()" class="w-2/3 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition shadow flex items-center justify-center gap-1.5">
           <span>அனுமதி சரிபார்</span> ➔
         </button>
@@ -239,6 +239,14 @@
       </div>
 
       <div class="mt-8 flex justify-center items-center gap-3 flex-wrap">
+        <button type="button" onclick="goBackToTestFolder()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-xl transition flex items-center gap-2 border border-amber-300">
+          <span>←</span> தேர்வுப் பட்டியல் (பின் செல்)
+        </button>
+
+        <a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-6 py-3 rounded-2xl text-xs sm:text-sm transition flex items-center gap-2">
+          <span>🏠</span> முகப்புப் பக்கம் செல்
+        </a>
+
         <button onclick="downloadCertificate()" class="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:scale-105 active:scale-95 text-slate-950 font-black px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-xl transition flex items-center gap-2 border border-amber-300">
           <i class="fa-solid fa-award text-base"></i> வண்ணச் சான்றிதழ் அச்சிடு / PDF
         </button>
@@ -250,10 +258,6 @@
         <button type="button" onclick="reattemptExam()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-xl transition flex items-center gap-2 border border-indigo-400">
           <i class="fa-solid fa-rotate-right text-base"></i> மீண்டும் பயிற்சி செய் (Re-attempt)
         </button>
-
-        <a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-6 py-3 rounded-2xl text-xs sm:text-sm transition">
-          முகப்புப் பக்கம் செல்
-        </a>
       </div>
     </div>
 
@@ -434,6 +438,19 @@
     const urlParams = new URLSearchParams(window.location.search);
     const examId = urlParams.get('id');
     const isDemoMode = urlParams.get('demo') === '1';
+
+    function goBackToTestFolder() {
+      isExamRunning = false;
+      if (timerInterval) clearInterval(timerInterval);
+      document.body.classList.remove('exam-active-lock');
+      try {
+        if (sessionStorage.getItem('kn_last_nav_state_v1')) {
+          window.location.href = 'index.html#folder';
+          return;
+        }
+      } catch (_) {}
+      window.location.href = 'index.html';
+    }
 
     function getDeviceId() {
       const key = 'kn_device_uuid_v1';
@@ -825,7 +842,7 @@
         container.innerHTML = `
           <div class="p-8 text-center bg-slate-800 rounded-2xl border border-slate-700">
             <p class="text-amber-400 font-bold">இந்தத் தேர்வில் வினாக்கள் எதுவும் பதிவேற்றப்படவில்லை!</p>
-            <a href="index.html" class="inline-block mt-3 px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs">முகப்புப் பக்கம் செல்</a>
+            <button type="button" onclick="goBackToTestFolder()" class="inline-block mt-3 px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs">← தேர்வுப் பட்டியல்</button>
           </div>
         `;
         return;
@@ -1157,6 +1174,10 @@
 
       container.innerHTML = questionsList.map((q, idx) => {
         const qData = extractQuestionDetails(q, isEnglish);
+        const isAnswered = (userAnswers[idx] !== undefined);
+        const answeredBadge = isAnswered
+          ? `<span class="text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-lg">✓ விடையளித்தது</span>`
+          : `<span class="text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-lg">எழுதாதது</span>`;
         const optionsHtml = qData.options.map((opt, optIdx) => `
           <div class="p-2.5 rounded-xl border border-slate-800 bg-slate-900/80 text-xs md:text-sm text-slate-300 flex items-start gap-2">
             <span class="font-bold font-mono text-amber-400">${optionLetters[optIdx]})</span>
@@ -1168,7 +1189,10 @@
 
         return `
           <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-2.5">
-            <span class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">Q${idx + 1}</span>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">Q${idx + 1}</span>
+              ${answeredBadge}
+            </div>
             <div class="text-sm md:text-base font-medium text-white leading-relaxed">${qData.text}</div>
             ${imageHtml}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">${optionsHtml}</div>
