@@ -1517,6 +1517,26 @@
       }
     }
 
+    async function updateStudentMedium(id, currentMed) {
+      if (currentSessionRole !== "OWNER" && !currentSessionPermissions.can_manage_students) {
+        return alert("❌ உங்களுக்கு மாணவர் விவரங்களை மாற்றும் அதிகாரம் இல்லை!");
+      }
+      const order = ["TAMIL", "ENGLISH", "ALL"];
+      const norm = String(currentMed || "TAMIL").toUpperCase();
+      const nextMed = order[(order.indexOf(norm) + 1) % order.length];
+
+      const { error } = await supabaseClient
+        .from("paid_students")
+        .update({ medium: nextMed })
+        .eq("id", id);
+
+      if (error) {
+        alert("Medium மாற்றுவதில் பிழை: " + error.message);
+      } else {
+        await loadPaidStudents();
+      }
+    }
+
     async function loadPaidStudents() {
       const tbody = document.getElementById("paidStudentsTable");
       const { data, error } = await supabaseClient.from("paid_students").select("*").order("created_at", { ascending: false });
@@ -1590,8 +1610,9 @@
             </td>
             <td class="p-3">${medBadge}</td>
             <td class="p-3 text-slate-500">${new Date(s.created_at).toLocaleDateString("ta-IN")}</td>
-            <td class="p-3 text-right">
-              ${canManageStudents ? `<button onclick="removePaidStudent('${s.id}', '${s.student_name}')" class="text-rose-600 hover:underline font-bold text-xs">நீக்கு</button>` : '<span class="text-slate-400 text-[11px]">View only</span>'}
+            <td class="p-3 text-right space-x-2 whitespace-nowrap">
+              ${canManageStudents ? `<button type="button" onclick="updateStudentMedium('${s.id}', '${medUpper}')" class="text-indigo-700 hover:underline font-bold text-xs">🌐 Medium</button>` : ''}
+              ${canManageStudents ? `<button type="button" onclick="removePaidStudent('${s.id}', '${s.student_name}')" class="text-rose-600 hover:underline font-bold text-xs">நீக்கு</button>` : '<span class="text-slate-400 text-[11px]">View only</span>'}
             </td>
           </tr>
         `;
