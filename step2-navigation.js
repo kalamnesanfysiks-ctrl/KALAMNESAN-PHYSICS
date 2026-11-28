@@ -289,6 +289,7 @@ export class KalamnesanNav {
 
   renderSubfolders() {
     if (!this.container) return;
+    this.state.subfolder = null;
     this.container.innerHTML = `
       <div class="kn-nav-wrapper">
         <button type="button" class="kn-back-btn" id="knBackFolderParent">← Back</button>
@@ -310,6 +311,18 @@ export class KalamnesanNav {
         this.loadTestList();
       });
     });
+  }
+
+  matchesSelectedSubject(examRow) {
+    const subKey = String(this.state.subject || "").toLowerCase();
+    if (!subKey) return true;
+    const titleUpper = String(examRow.exam_title || examRow.title || "").toUpperCase();
+    const isChe = titleUpper.includes("(CHE)") || titleUpper.includes("CHEM");
+    const isBio = titleUpper.includes("(BIO)") || titleUpper.includes("BIO");
+    if (subKey.includes("chem")) return isChe;
+    if (subKey.includes("bio")) return isBio;
+    if (subKey.includes("phy") || subKey.includes("sci")) return !isChe && !isBio;
+    return true;
   }
 
   async fetchLegacyMatchingExams() {
@@ -338,6 +351,8 @@ export class KalamnesanNav {
           if (this.state.stream === "neet" && !rowType.includes("NEET")) return false;
           if (this.state.stream === "jee" && !rowType.includes("JEE")) return false;
 
+          if (!this.matchesSelectedSubject(e)) return false;
+
           const rawSub = String(e.sub_category || e.chapter_name || "").toUpperCase();
           const titleText = String(e.exam_title || e.title || "").toUpperCase();
 
@@ -354,7 +369,7 @@ export class KalamnesanNav {
         })
         .map((r) => ({
           ...r,
-          question_count: getQuestionCount(r.questions)
+          question_count: r.question_count ?? getQuestionCount(r.questions)
         }));
     } catch (_) {
       return [];
@@ -393,7 +408,6 @@ export class KalamnesanNav {
       }
     } catch (_) {}
 
-    // Instant legacy fallback so existing 31 tests show up without loading delay
     if (examsToRender.length === 0) {
       examsToRender = await this.fetchLegacyMatchingExams();
     }
@@ -406,7 +420,7 @@ export class KalamnesanNav {
     container.innerHTML = examsToRender.map((exam) => `
       <div class="kn-test-card">
         <h4>${exam.title || exam.exam_title || "Physics Test"}</h4>
-        <p>வினாக்கள்: ${exam.question_count ?? 0} | நேரம்: ${exam.duration_minutes ?? 15} நிமிடம்</p>
+        <p>வினாக்கள்: ${exam.question_count ?? getQuestionCount(exam.questions)} | நேரம்: ${exam.duration_minutes ?? 15} நிமிடம்</p>
         <div class="kn-test-actions">
           ${exam.pre_test_video_url ? `
             <button type="button" class="kn-btn-video" data-video="${encodeURIComponent(exam.pre_test_video_url)}">▶ முன் தயாரிப்பு வீடியோ</button>
