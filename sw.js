@@ -5,6 +5,7 @@ const STATIC_ASSETS = [
   "./exam.html",
   "./admin.html",
   "./manifest.json",
+  "./admin-manifest.json",
   "./kalam.png",
   "./signature.png",
   "./tracks-config.js",
