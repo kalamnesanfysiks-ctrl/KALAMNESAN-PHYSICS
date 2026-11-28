@@ -1,5 +1,7 @@
 import { TRACK_CONFIG, SUBFOLDERS } from "./tracks-config.js";
 
+const NAV_STATE_STORAGE_KEY = "kn_last_nav_state_v1";
+
 function toYouTubeEmbedUrl(rawUrl) {
   if (!rawUrl || typeof rawUrl !== "string") return "";
   try {
@@ -45,8 +47,50 @@ export class KalamnesanNav {
     };
   }
 
+  saveNavState() {
+    try {
+      sessionStorage.setItem(NAV_STATE_STORAGE_KEY, JSON.stringify(this.state));
+    } catch (_) {}
+  }
+
+  restoreSavedNavState() {
+    try {
+      const raw = sessionStorage.getItem(NAV_STATE_STORAGE_KEY);
+      if (!raw) return false;
+      const saved = JSON.parse(raw);
+      if (!saved || !saved.track || !TRACK_CONFIG[saved.track]) return false;
+      this.state = {
+        track: saved.track,
+        stream: saved.stream || null,
+        medium: saved.medium || null,
+        subject: saved.subject || null,
+        subfolder: saved.subfolder || null
+      };
+      if (this.state.subfolder) {
+        this.loadTestList();
+        return true;
+      }
+      if (this.state.subject) {
+        this.renderSubfolders();
+        return true;
+      }
+      if (this.state.medium) {
+        this.renderSubjects();
+        return true;
+      }
+      this.selectTrack(this.state.track);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   async init() {
     if (!this.container) return;
+    if (window.location.hash === "#folder" && this.restoreSavedNavState()) {
+      await this.loadDemoExams();
+      return;
+    }
     this.renderHomePage();
     await this.loadDemoExams();
   }
@@ -145,7 +189,10 @@ export class KalamnesanNav {
       b.addEventListener("click", () => this.showVideoModal(decodeURIComponent(b.dataset.video || "")));
     });
     demoGrid.querySelectorAll(".kn-btn-start-demo").forEach((b) => {
-      b.addEventListener("click", () => this.onStartExam(decodeURIComponent(b.dataset.examId || ""), { isDemo: true }));
+      b.addEventListener("click", () => {
+        this.saveNavState();
+        this.onStartExam(decodeURIComponent(b.dataset.examId || ""), { isDemo: true });
+      });
     });
   }
 
@@ -158,6 +205,7 @@ export class KalamnesanNav {
     this.state.medium = null;
     this.state.subject = null;
     this.state.subfolder = null;
+    this.saveNavState();
 
     if (Array.isArray(cfg.streams) && cfg.streams.length > 1) {
       this.renderStreamPicker(cfg);
@@ -165,6 +213,7 @@ export class KalamnesanNav {
       this.selectStream(cfg.streams[0].id);
     } else if (cfg.allowed_mediums.length === 1 && cfg.allowed_mediums[0] === "en") {
       this.state.medium = "en";
+      this.saveNavState();
       this.renderSubjects();
     } else {
       this.renderMediumPicker(["ta", "en"]);
@@ -201,6 +250,7 @@ export class KalamnesanNav {
     const cfg = TRACK_CONFIG[this.state.track];
     if (!cfg) return;
     this.state.stream = streamId;
+    this.saveNavState();
 
     const streamObj = (cfg.streams || []).find((s) => s.id === streamId);
     const allowed = (streamObj && Array.isArray(streamObj.mediums))
@@ -209,6 +259,7 @@ export class KalamnesanNav {
 
     if (allowed.length === 1 && allowed[0] === "en") {
       this.state.medium = "en";
+      this.saveNavState();
       this.renderSubjects();
     } else {
       this.renderMediumPicker(allowed);
@@ -242,6 +293,7 @@ export class KalamnesanNav {
     this.container.querySelectorAll(".kn-med-card").forEach((c) => {
       c.addEventListener("click", () => {
         this.state.medium = c.dataset.med;
+        this.saveNavState();
         this.renderSubjects();
       });
     });
@@ -282,6 +334,7 @@ export class KalamnesanNav {
     this.container.querySelectorAll(".kn-subject-card").forEach((c) => {
       c.addEventListener("click", () => {
         this.state.subject = c.dataset.sub;
+        this.saveNavState();
         this.renderSubfolders();
       });
     });
@@ -290,6 +343,7 @@ export class KalamnesanNav {
   renderSubfolders() {
     if (!this.container) return;
     this.state.subfolder = null;
+    this.saveNavState();
     this.container.innerHTML = `
       <div class="kn-nav-wrapper">
         <button type="button" class="kn-back-btn" id="knBackFolderParent">← Back</button>
@@ -308,6 +362,7 @@ export class KalamnesanNav {
     this.container.querySelectorAll(".kn-subfolder-card").forEach((c) => {
       c.addEventListener("click", () => {
         this.state.subfolder = c.dataset.folder;
+        this.saveNavState();
         this.loadTestList();
       });
     });
@@ -378,6 +433,7 @@ export class KalamnesanNav {
 
   async loadTestList() {
     if (!this.container) return;
+    this.saveNavState();
     this.container.innerHTML = `
       <div class="kn-nav-wrapper">
         <button type="button" class="kn-back-btn" id="knBackTestList">← Back</button>
@@ -434,7 +490,10 @@ export class KalamnesanNav {
       b.addEventListener("click", () => this.showVideoModal(decodeURIComponent(b.dataset.video || "")));
     });
     container.querySelectorAll(".kn-btn-start").forEach((b) => {
-      b.addEventListener("click", () => this.onStartExam(decodeURIComponent(b.dataset.examId || ""), { isDemo: false }));
+      b.addEventListener("click", () => {
+        this.saveNavState();
+        this.onStartExam(decodeURIComponent(b.dataset.examId || ""), { isDemo: false });
+      });
     });
   }
 
